@@ -7,17 +7,6 @@
  */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/** model interface DogsAnotherDogsTest */
-export interface DogsAnotherDogsTest {
-  name: string;
-}
-
-export function dogsAnotherDogsTestDeserializer(item: any): DogsAnotherDogsTest {
-  return {
-    name: item["name"],
-  };
-}
-
 /** model interface DogsAnotherDogsPet */
 export interface DogsAnotherDogsPet {
   name: string;

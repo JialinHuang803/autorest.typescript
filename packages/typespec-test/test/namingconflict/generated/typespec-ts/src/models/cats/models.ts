@@ -17,3 +17,14 @@ export function catsPetDeserializer(item: any): CatsPet {
     name: item["name"],
   };
 }
+
+/** model interface CatsFish */
+export interface CatsFish {
+  type: string;
+}
+
+export function catsFishDeserializer(item: any): CatsFish {
+  return {
+    type: item["type"],
+  };
+}

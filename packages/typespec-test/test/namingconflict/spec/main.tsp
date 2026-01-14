@@ -11,13 +11,14 @@ namespace PetStore {
     model Pet {
       name: string;
     }
-    model Test {
-      name: string;
+
+    model Bone {
+      size: string;
     }
 
     op pet(): Pet;
     @post
-    op test(): Test;
+    op bone(): Bone;
 
     @route("/anotherDogs")
     namespace AnotherDogs {
@@ -26,11 +27,6 @@ namespace PetStore {
         type: string;
       }
 
-      model Test {
-        name: string;
-      }
-
-      op getTest(): Test;
       @post
       op pet(): Pet;
     }
@@ -42,6 +38,11 @@ namespace PetStore {
       name: string;
     }
 
+    model Fish {
+      type: string;
+    }
     op pet(): Pet;
+    @post
+    op fish(): Fish;
   }
 }

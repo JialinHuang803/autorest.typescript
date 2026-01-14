@@ -4,7 +4,7 @@
 import { OperationOptions } from "@azure-rest/core-client";
 
 /** Optional parameters. */
-export interface DogsTestOptionalParams extends OperationOptions {}
+export interface DogsBoneOptionalParams extends OperationOptions {}
 
 /** Optional parameters. */
 export interface DogsPetOptionalParams extends OperationOptions {}

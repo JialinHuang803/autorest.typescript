@@ -5,10 +5,10 @@ import { PetStoreContext as Client } from "../index.js";
 import {
   DogsPet,
   dogsPetDeserializer,
-  DogsTest,
-  dogsTestDeserializer,
+  DogsBone,
+  dogsBoneDeserializer,
 } from "../../models/dogs/models.js";
-import { DogsTestOptionalParams, DogsPetOptionalParams } from "./options.js";
+import { DogsBoneOptionalParams, DogsPetOptionalParams } from "./options.js";
 import {
   StreamableMethod,
   PathUncheckedResponse,
@@ -16,9 +16,9 @@ import {
   operationOptionsToRequestParameters,
 } from "@azure-rest/core-client";
 
-export function _testSend(
+export function _boneSend(
   context: Client,
-  options: DogsTestOptionalParams = { requestOptions: {} },
+  options: DogsBoneOptionalParams = { requestOptions: {} },
 ): StreamableMethod {
   return context
     .path("/dogs")
@@ -28,21 +28,21 @@ export function _testSend(
     });
 }
 
-export async function _testDeserialize(result: PathUncheckedResponse): Promise<DogsTest> {
+export async function _boneDeserialize(result: PathUncheckedResponse): Promise<DogsBone> {
   const expectedStatuses = ["200"];
   if (!expectedStatuses.includes(result.status)) {
     throw createRestError(result);
   }
 
-  return dogsTestDeserializer(result.body);
+  return dogsBoneDeserializer(result.body);
 }
 
-export async function test(
+export async function bone(
   context: Client,
-  options: DogsTestOptionalParams = { requestOptions: {} },
-): Promise<DogsTest> {
-  const result = await _testSend(context, options);
-  return _testDeserialize(result);
+  options: DogsBoneOptionalParams = { requestOptions: {} },
+): Promise<DogsBone> {
+  const result = await _boneSend(context, options);
+  return _boneDeserialize(result);
 }
 
 export function _petSend(

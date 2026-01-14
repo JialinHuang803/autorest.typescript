@@ -3,15 +3,10 @@
 
 import { PetStoreContext as Client } from "../../index.js";
 import {
-  DogsAnotherDogsTest,
-  dogsAnotherDogsTestDeserializer,
   DogsAnotherDogsPet,
   dogsAnotherDogsPetDeserializer,
 } from "../../../models/dogs/anotherDogs/models.js";
-import {
-  DogsAnotherDogsPetOptionalParams,
-  DogsAnotherDogsGetTestOptionalParams,
-} from "./options.js";
+import { DogsAnotherDogsPetOptionalParams } from "./options.js";
 import {
   StreamableMethod,
   PathUncheckedResponse,
@@ -46,35 +41,4 @@ export async function pet(
 ): Promise<DogsAnotherDogsPet> {
   const result = await _petSend(context, options);
   return _petDeserialize(result);
-}
-
-export function _getTestSend(
-  context: Client,
-  options: DogsAnotherDogsGetTestOptionalParams = { requestOptions: {} },
-): StreamableMethod {
-  return context
-    .path("/dogs/anotherDogs")
-    .get({
-      ...operationOptionsToRequestParameters(options),
-      headers: { accept: "application/json", ...options.requestOptions?.headers },
-    });
-}
-
-export async function _getTestDeserialize(
-  result: PathUncheckedResponse,
-): Promise<DogsAnotherDogsTest> {
-  const expectedStatuses = ["200"];
-  if (!expectedStatuses.includes(result.status)) {
-    throw createRestError(result);
-  }
-
-  return dogsAnotherDogsTestDeserializer(result.body);
-}
-
-export async function getTest(
-  context: Client,
-  options: DogsAnotherDogsGetTestOptionalParams = { requestOptions: {} },
-): Promise<DogsAnotherDogsTest> {
-  const result = await _getTestSend(context, options);
-  return _getTestDeserialize(result);
 }

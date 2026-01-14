@@ -2,14 +2,48 @@
 // Licensed under the MIT License.
 
 import { PetStoreContext as Client } from "../index.js";
-import { CatsPet, catsPetDeserializer } from "../../models/cats/models.js";
-import { CatsPetOptionalParams } from "./options.js";
+import {
+  CatsPet,
+  catsPetDeserializer,
+  CatsFish,
+  catsFishDeserializer,
+} from "../../models/cats/models.js";
+import { CatsFishOptionalParams, CatsPetOptionalParams } from "./options.js";
 import {
   StreamableMethod,
   PathUncheckedResponse,
   createRestError,
   operationOptionsToRequestParameters,
 } from "@azure-rest/core-client";
+
+export function _fishSend(
+  context: Client,
+  options: CatsFishOptionalParams = { requestOptions: {} },
+): StreamableMethod {
+  return context
+    .path("/cats")
+    .post({
+      ...operationOptionsToRequestParameters(options),
+      headers: { accept: "application/json", ...options.requestOptions?.headers },
+    });
+}
+
+export async function _fishDeserialize(result: PathUncheckedResponse): Promise<CatsFish> {
+  const expectedStatuses = ["200"];
+  if (!expectedStatuses.includes(result.status)) {
+    throw createRestError(result);
+  }
+
+  return catsFishDeserializer(result.body);
+}
+
+export async function fish(
+  context: Client,
+  options: CatsFishOptionalParams = { requestOptions: {} },
+): Promise<CatsFish> {
+  const result = await _fishSend(context, options);
+  return _fishDeserialize(result);
+}
 
 export function _petSend(
   context: Client,

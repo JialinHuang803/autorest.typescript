@@ -4,6 +4,7 @@ options:
     examples-dir: "{project-root}/spec/examples"
     azure-sdk-for-js: false
     experimental-extensible-enums: true
+    # enable-model-namespace: false
     emitter-output-dir: "{project-root}/generated/typespec-ts"
     generate-sample: true
     generate-metadata: true

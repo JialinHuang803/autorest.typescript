@@ -18,13 +18,13 @@ export function dogsPetDeserializer(item: any): DogsPet {
   };
 }
 
-/** model interface DogsTest */
-export interface DogsTest {
-  name: string;
+/** model interface DogsBone */
+export interface DogsBone {
+  size: string;
 }
 
-export function dogsTestDeserializer(item: any): DogsTest {
+export function dogsBoneDeserializer(item: any): DogsBone {
   return {
-    name: item["name"],
+    size: item["size"],
   };
 }

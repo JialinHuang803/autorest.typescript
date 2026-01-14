@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-export { pet } from "./operations.js";
-export { CatsPetOptionalParams } from "./options.js";
+export { fish, pet } from "./operations.js";
+export { CatsFishOptionalParams, CatsPetOptionalParams } from "./options.js";
