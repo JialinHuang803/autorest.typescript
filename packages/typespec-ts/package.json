@@ -29,7 +29,7 @@
     "prettier": "prettier --config ./.prettierrc \"{src,test,static}/**/*.ts\" \"!test/**/generated/**/*.ts\"",
     "check:tree": "node --loader ts-node/esm ./test/commands/check-clean-tree.ts",
     "integration-test-ci": "npm-run-all copy:typespec integration-test-ci:rlc integration-test-ci:azure-rlc integration-test-ci:modular integration-test-ci:azure-modular",
-    "integration-test-ci:sequential": "npm-run-all --serial copy:typespec integration-test-ci:modular && npm run integration-test-ci:modular",
+    "integration-test-ci:sequential": "npm-run-all --serial copy:typespec integration-test-ci:modular integration-test-ci:azure-modular",
     "integration-test-ci:rlc": "npm-run-all --silent -p start-test-server:rlc --race generate-and-run:rlc",
     "integration-test-ci:azure-rlc": "npm-run-all --silent -p start-test-server:azure-rlc --race generate-and-run:azure-rlc",
     "integration-test-ci:modular": "npm-run-all --silent -p start-test-server:modular --race generate-and-run:modular",
