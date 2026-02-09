@@ -18,6 +18,248 @@ The coverage JSON at `packages/typespec-ts/coverage/spector-coverage-typescript-
 5. Creates a new `.spec.ts` file following established conventions
 6. Provides guidance on running and verifying the test
 
+## Quick Start - Implementation Workflow
+
+When a user requests to implement a Spector test case (e.g., "Implement the encode/array spector test case"), follow this 5-step workflow in the `packages/typespec-ts` directory:
+
+### Step 1: Add Test Case to cadl-ranch-list.js
+
+Add an entry to the `azureModularTsps` array in `test/commands/cadl-ranch-list.js`:
+
+```javascript
+{
+  outputPath: "encode/array",  // Replace with the relative path of the test case
+  inputPath: "encode/array"     // Replace with the relative path of the test case
+}
+```
+
+**Location in file:** Add the entry in alphabetical/logical order within the `azureModularTsps` array (typically starts around line 595).
+
+**Example for encode/array:**
+```javascript
+export const azureModularTsps = [
+  // ... other entries ...
+  {
+    outputPath: "encode/bytes",
+    inputPath: "encode/bytes"
+  },
+  {
+    outputPath: "encode/datetime",
+    inputPath: "encode/datetime"
+  },
+  {
+    outputPath: "encode/array",    // Add this entry
+    inputPath: "encode/array"
+  },
+  {
+    outputPath: "parameters/spread",
+    inputPath: "parameters/spread"
+  },
+  // ... more entries ...
+];
+```
+
+### Step 2: Copy TypeSpec Files
+
+Run the copy command to load `.tsp` files and `mockapi.ts` from the npm packages:
+
+```bash
+cd packages/typespec-ts
+pnpm run copy:typespec
+```
+
+This command copies TypeSpec specifications from:
+- `./node_modules/@typespec/http-specs/specs/*`
+- `./node_modules/@azure-tools/azure-http-specs/specs/*`
+
+To the destination:
+- `temp/specs/[test-case-path]/` (e.g., `temp/specs/encode/array/`)
+
+The `mockapi.ts` file in the temp directory contains the mock server implementation and will guide your test implementation.
+
+### Step 3: Create tspconfig.yaml
+
+Create a `tspconfig.yaml` file in the generated test directory:
+
+**Location:** `test/azureModularIntegration/generated/[test-case-path]/tspconfig.yaml`
+
+**Example for encode/array:**
+```yaml
+# File: test/azureModularIntegration/generated/encode/array/tspconfig.yaml
+emit:
+  - "@azure-tools/typespec-ts"
+options:
+  "@azure-tools/typespec-ts":
+    emitter-output-dir: "{project-root}"
+    generate-metadata: true
+    generate-test: false
+    add-credentials: false
+    flavor: azure
+    azure-sdk-for-js: false
+    is-typespec-test: true
+    enable-operation-group: true
+    hierarchy-client: false
+    package-details:
+      name: "@msinternal/encode-array"
+```
+
+**Key configuration points:**
+- `emitter-output-dir`: Use `"{project-root}"` to generate in the same directory
+- `flavor`: Set to `azure` for Azure Modular tests
+- `package-details.name`: Use pattern `"@msinternal/[category-subcategory]"`
+  - Examples: `@msinternal/encode-array`, `@msinternal/encode-bytes`, `@msinternal/payload-xml`
+
+**Reference:** Look at existing tspconfig.yaml files in other generated directories for patterns:
+- `test/azureModularIntegration/generated/encode/bytes/tspconfig.yaml`
+- `test/azureModularIntegration/generated/payload/xml/tspconfig.yaml`
+
+### Step 4: Create the Test Spec File
+
+Create a `.spec.ts` file under `test/azureModularIntegration/` following the naming convention:
+
+**Naming:** Convert test case path to camelCase + `.spec.ts`
+- `encode/array` → `encodeArray.spec.ts`
+- `encode/bytes` → `encodeBytes.spec.ts`
+- `payload/xml` → `payloadXml.spec.ts`
+- `authentication/api-key` → `authApiKey.spec.ts`
+
+**Location:** `test/azureModularIntegration/encodeArray.spec.ts`
+
+**Implementation guidance:**
+1. Review `temp/specs/[test-case-path]/mockapi.ts` to understand:
+   - Expected request/response patterns
+   - Test scenarios and operations
+   - Mock server behavior
+
+2. Study similar existing test files:
+   - For encode tests: `encodeBytes.spec.ts`, `encodeDatetime.spec.ts`, `encodeNumeric.spec.ts`
+   - For array tests: `arrayItemTypes.spec.ts`
+
+3. Follow the standard test structure:
+   ```typescript
+   import { assert } from "chai";
+   import { ClientName } from "./generated/[test-case-path]/src/index.js";
+   
+   describe("Test Suite Name", () => {
+     let client: ClientName;
+   
+     beforeEach(() => {
+       client = new ClientName({
+         endpoint: "http://localhost:3002",
+         allowInsecureConnection: true,
+         retryOptions: {
+           maxRetries: 0
+         }
+       });
+     });
+   
+     describe("Feature/Operation Group", () => {
+       it("should [description of test behavior]", async () => {
+         // Test implementation based on mockapi.ts
+       });
+     });
+   });
+   ```
+
+4. Key patterns:
+   - **Always use:** `endpoint: "http://localhost:3002"` and `allowInsecureConnection: true`
+   - **Import from generated client:** `./generated/[path]/src/index.js`
+   - **Use chai assertions:** `assert.strictEqual()`, `assert.deepEqual()`, `assert.isUndefined()`
+   - **Handle errors with try-catch** when testing error scenarios
+
+### Step 5: Generate and Run Tests
+
+Run the integration test script to generate the client and run all tests:
+
+```bash
+cd packages/typespec-ts
+npm run generate-and-run:azure-modular
+```
+
+This command will:
+1. Generate the TypeScript client from TypeSpec specifications
+2. Build the generated client
+3. Start the mock test server on port 3002
+4. Run all Azure Modular integration tests
+5. Stop the test server
+
+**If tests fail:**
+1. Check the error messages for clues
+2. Verify the test implementation matches `mockapi.ts` expectations
+3. Review the generated client code in `test/azureModularIntegration/generated/[path]/src/`
+4. Compare with similar working tests
+5. Fix issues and re-run: `npm run generate-and-run:azure-modular`
+
+**Alternative commands for debugging:**
+```bash
+# Only regenerate the specific test case
+npm run copy:typespec
+npx tsx ./test/commands/gen-cadl-ranch.js --tag=azure-modular --filter=encode/array
+
+# Start test server manually
+npm run start-test-server:azure-modular
+
+# Run tests alone (server must be running)
+npm run integration-test:alone:azure-modular
+
+# Stop test server
+npm run stop-test-server -- -p 3002
+```
+
+### Complete Example: Implementing encode/array
+
+Here's the complete workflow for implementing the `encode/array` test case:
+
+```bash
+# 1. Navigate to typespec-ts directory
+cd packages/typespec-ts
+
+# 2. Add entry to cadl-ranch-list.js (manual edit)
+# Edit test/commands/cadl-ranch-list.js and add to azureModularTsps:
+#   {
+#     outputPath: "encode/array",
+#     inputPath: "encode/array"
+#   }
+
+# 3. Copy TypeSpec files
+pnpm run copy:typespec
+
+# 4. Create directory structure
+mkdir -p test/azureModularIntegration/generated/encode/array
+
+# 5. Create tspconfig.yaml
+cat > test/azureModularIntegration/generated/encode/array/tspconfig.yaml << 'EOF'
+emit:
+  - "@azure-tools/typespec-ts"
+options:
+  "@azure-tools/typespec-ts":
+    emitter-output-dir: "{project-root}"
+    generate-metadata: true
+    generate-test: false
+    add-credentials: false
+    flavor: azure
+    azure-sdk-for-js: false
+    is-typespec-test: true
+    enable-operation-group: true
+    hierarchy-client: false
+    package-details:
+      name: "@msinternal/encode-array"
+EOF
+
+# 6. Review mockapi.ts to understand test scenarios
+cat temp/specs/encode/array/mockapi.ts
+
+# 7. Create test spec file (manual implementation based on mockapi.ts)
+# Create: test/azureModularIntegration/encodeArray.spec.ts
+
+# 8. Generate client and run tests
+npm run generate-and-run:azure-modular
+```
+
+## Detailed Implementation Guide
+
+The sections below provide in-depth guidance for each aspect of test implementation. Use these when you need more detailed information beyond the quick start workflow.
+
 ## Step 1: Understanding the Test ID
 
 Spector test IDs follow a hierarchical naming pattern that indicates the category, subcategory, and operation being tested.
