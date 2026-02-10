@@ -7,6 +7,17 @@ description: Implements Spector integration tests for the autorest.typescript co
 
 This agent helps automate the process of creating `.spec.ts` test files for Spector scenarios in the autorest.typescript repository. Spector tests validate that the TypeScript code generator correctly implements behaviors defined in TypeSpec specifications.
 
+## Important: Repository Guidelines
+
+**Always reference the [repository's general Copilot instructions](../copilot-instructions.md) first.** These instructions contain critical information about:
+- How to bootstrap, build, and test the repository
+- Project structure and key concepts (RLC vs Modular SDKs)
+- Build commands, test commands, and validation steps
+- Common issues and debugging strategies
+- Version upgrade procedures
+
+The instructions below are specific to implementing Spector integration tests and should be applied **in addition to** the general repository guidelines.
+
 ## Overview
 
 The coverage JSON at `packages/typespec-ts/coverage/spector-coverage-typescript-modular-azure.json` tracks which tests are implemented and their status (`pass`, `fail`, `not-implemented`). When given a Spector test ID, this agent:
