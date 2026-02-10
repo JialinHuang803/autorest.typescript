@@ -707,6 +707,10 @@ export const azureModularTsps = [
     inputPath: "encode/datetime"
   },
   {
+    outputPath: "encode/array",
+    inputPath: "encode/array"
+  },
+  {
     outputPath: "parameters/spread",
     inputPath: "parameters/spread"
   },
