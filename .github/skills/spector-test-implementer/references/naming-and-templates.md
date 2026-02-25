@@ -27,7 +27,7 @@ Convert the test case path to camelCase for the file name:
 
 Set `package-details.name` to `"@msinternal/<category-subcategory>"` based on the path (e.g., `encode/array` becomes `@msinternal/encode-array`).
 
-This is the minimal template. If other tspconfig.yaml files exist in the same `generated/` parent directory (e.g., sibling `encode/bytes`), check them for any additional options that may be needed (such as `generate-metadata`, `enable-operation-group`, or `hierarchy-client`).
+Use this template exactly as-is. Do not copy additional options from sibling tspconfig files.
 
 ```yaml
 emit:
@@ -43,6 +43,19 @@ options:
     package-details:
       name: "@msinternal/<category-subcategory>"
       description: "<Category Subcategory> Test Service"
+```
+
+## .gitignore Template
+
+Create this file at `test/azureModularIntegration/generated/<path>/.gitignore` to ensure only `tspconfig.yaml`, `src/index.d.ts`, and `.gitignore` itself are tracked:
+
+```
+/**
+!/src
+/src/**
+!/src/index.d.ts
+!/.gitignore
+!/tspconfig.yaml
 ```
 
 ## Test File Template

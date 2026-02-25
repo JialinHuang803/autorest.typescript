@@ -21,6 +21,17 @@ Skip if the user confirms these have already been run.
 
 ## Workflow
 
+### Step 0: Ensure Specs Are Up-to-Date
+
+Check if newer dev versions of the spec packages are available:
+
+```bash
+npm view @typespec/http-specs dist-tags.next
+npm view @azure-tools/azure-http-specs dist-tags.next
+```
+
+Compare with the versions in `packages/typespec-ts/package.json`. If newer versions exist, update `package.json` and run `pnpm install` before proceeding.
+
 For each test case path (e.g., `encode/numeric`):
 
 ### Step 1: Validate the Path
@@ -66,14 +77,17 @@ Add to the `azureModularTsps` array:
 
 Place the new entry near similar paths (e.g., near other `encode/*` entries like `encode/bytes`).
 
+**Warning:** This file contains four arrays with overlapping entry patterns. A text-based edit will likely fail with "Multiple matches found." Instead, identify the target line number and use a line-number-based insertion (e.g., read the file, insert at the specific line, write back).
+
 ### Step 5: Create tspconfig.yaml and .spec.ts
 
 This step has two phases: first create the config and generate the client, then write the test.
 
-**Phase 1 -- tspconfig.yaml and generation:**
+**Phase 1 -- tspconfig.yaml, .gitignore, and generation:**
 
-1. Create `test/azureModularIntegration/generated/<path>/tspconfig.yaml` using the [tspconfig template](references/naming-and-templates.md#tspconfig-template). If other tspconfig.yaml files exist in the same `generated/` parent directory, check them for any additional options that may be needed.
-2. Generate the client by running:
+1. Create `test/azureModularIntegration/generated/<path>/tspconfig.yaml` using the [tspconfig template](references/naming-and-templates.md#tspconfig-template) exactly as-is.
+2. Create `test/azureModularIntegration/generated/<path>/.gitignore` with the content shown in [Expected Output Files](#expected-output-files).
+3. Generate the client by running:
    ```bash
    npx tsx ./test/commands/gen-cadl-ranch.js --tag=azure-modular --filter=<path>
    ```
@@ -87,19 +101,25 @@ This step has two phases: first create the config and generate the client, then 
 
 ### Step 6: Run Tests
 
-Run all azure-modular integration tests. This starts the mock server, runs all tests, and stops the server:
+Run only the newly created test to verify it works:
 
 ```bash
-npm run generate-and-run:azure-modular
+npm run start-test-server:azure-modular
 ```
 
-For iterative debugging (manual server control):
+Wait for `Started server on 3002` to appear, then in a separate terminal run the specific test file:
 
 ```bash
-npm run start-test-server:azure-modular          # Start server on port 3002
-npm run integration-test:alone:azure-modular     # Run tests (in another terminal)
-npm run stop-test-server -- -p 3002              # Stop server when done
+cross-env TS_NODE_PROJECT=tsconfig.integration.json mocha -r ts-node/register --experimental-specifier-resolution=node --timeout 36000 ./test/azureModularIntegration/<specFileName>.spec.ts
 ```
+
+After the test completes, stop the server:
+
+```bash
+npm run stop-test-server -- -p 3002
+```
+
+**Note:** Do not use `npm run generate-and-run:azure-modular` for validation -- it regenerates all clients and runs all tests (~30+ minutes), and unrelated flaky tests may cause false failures. Only run the specific test file you created.
 
 ### Step 7: Report Results
 
@@ -109,6 +129,25 @@ After running tests, report to the user:
 - Which scenarios were newly implemented (and in which `.spec.ts` file)
 - Which scenarios already existed and were skipped
 - **Which scenarios failed.** For each failure, compare the expected values in your test against `mockapi.ts` to confirm your test implementation is correct (e.g., correct method calls, correct request bodies, correct expected response values). If your test has a bug, fix it and re-run. If the test correctly matches `mockapi.ts` but still fails due to mismatched expected vs actual results, it's likely an emitter bug or unsupported feature. In that case, keep the test code -- do not delete failing tests -- and tell the user which specific scenarios failed so they can investigate the emitter.
+
+## Expected Output Files
+
+For each new test path, these are the files that should be committed:
+
+| File | Action |
+| --- | --- |
+| `test/commands/cadl-ranch-list.js` | Modified (new entry in `azureModularTsps`) |
+| `test/azureModularIntegration/generated/<path>/.gitignore` | Created |
+| `test/azureModularIntegration/generated/<path>/tspconfig.yaml` | Created |
+| `test/azureModularIntegration/generated/<path>/src/index.d.ts` | Generated (by gen-cadl-ranch.js) |
+| `test/azureModularIntegration/<camelCaseName>.spec.ts` | Created |
+
+The `.gitignore` ensures only `tspconfig.yaml`, `src/index.d.ts`, and `.gitignore` itself are tracked. See the [.gitignore template](references/naming-and-templates.md#gitignore-template).
+
+Do **not** commit these files:
+
+- `spec-coverage.json` — generated by the test server, gitignored
+- `coverage/` — test coverage output directory
 
 ## Troubleshooting
 
