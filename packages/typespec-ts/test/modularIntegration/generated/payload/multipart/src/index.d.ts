@@ -87,39 +87,6 @@ export declare interface FormDataCheckFileNameAndContentTypeOptionalParams exten
 export declare interface FormDataFileArrayAndBasicOptionalParams extends OperationOptions {
 }
 
-export declare interface FormDataFileOperations {
-    uploadFileArray: (body: {
-        files: Array<FileContents | {
-            contents: FileContents;
-            contentType?: "image/png";
-            filename?: string;
-        }>;
-    }, options?: FormDataFileUploadFileArrayOptionalParams) => Promise<void>;
-    uploadFileRequiredFilename: (body: {
-        file: File | {
-            contents: FileContents;
-            contentType?: "image/png";
-            filename: string;
-        };
-    }, options?: FormDataFileUploadFileRequiredFilenameOptionalParams) => Promise<void>;
-    uploadFileSpecificContentType: (body: {
-        file: FileContents | {
-            contents: FileContents;
-            contentType?: "image/png";
-            filename?: string;
-        };
-    }, options?: FormDataFileUploadFileSpecificContentTypeOptionalParams) => Promise<void>;
-}
-
-export declare interface FormDataFileUploadFileArrayOptionalParams extends OperationOptions {
-}
-
-export declare interface FormDataFileUploadFileRequiredFilenameOptionalParams extends OperationOptions {
-}
-
-export declare interface FormDataFileUploadFileSpecificContentTypeOptionalParams extends OperationOptions {
-}
-
 export declare interface FormDataHttpPartsContentTypeImageJpegContentTypeOptionalParams extends OperationOptions {
 }
 
@@ -161,11 +128,7 @@ export declare interface FormDataMultiBinaryPartsOptionalParams extends Operatio
 
 export declare interface FormDataOperations {
     anonymousModel: (body: {
-        profileImage: FileContents | {
-            contents: FileContents;
-            contentType?: string;
-            filename?: string;
-        };
+        profileImage: Uint8Array;
     }, options?: FormDataAnonymousModelOptionalParams) => Promise<void>;
     checkFileNameAndContentType: (body: MultiPartRequest, options?: FormDataCheckFileNameAndContentTypeOptionalParams) => Promise<void>;
     multiBinaryParts: (body: MultiBinaryPartsRequest, options?: FormDataMultiBinaryPartsOptionalParams) => Promise<void>;
@@ -175,7 +138,6 @@ export declare interface FormDataOperations {
     optionalParts: (body: MultiPartOptionalRequest, options?: FormDataOptionalPartsOptionalParams) => Promise<void>;
     withWireName: (body: MultiPartRequestWithWireName, options?: FormDataWithWireNameOptionalParams) => Promise<void>;
     basic: (body: MultiPartRequest, options?: FormDataBasicOptionalParams) => Promise<void>;
-    file: FormDataFileOperations;
     httpParts: FormDataHttpPartsOperations;
 }
 

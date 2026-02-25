@@ -4,9 +4,6 @@
 import { OperationOptions } from "@azure-rest/core-client";
 
 /** Optional parameters. */
-export interface DataProductsReadOptionalParams extends OperationOptions {}
-
-/** Optional parameters. */
 export interface DataProductsListBySubscriptionOptionalParams extends OperationOptions {}
 
 /** Optional parameters. */

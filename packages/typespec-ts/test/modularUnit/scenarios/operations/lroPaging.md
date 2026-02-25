@@ -328,7 +328,6 @@ export async function _suspendDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 

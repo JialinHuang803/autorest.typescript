@@ -11,9 +11,7 @@ import {
   SdkHttpParameterExampleValue,
   SdkServiceOperation,
   SdkExampleValue,
-  SdkClientInitializationType,
-  SdkModelPropertyType,
-  isReadOnly
+  SdkClientInitializationType
 } from "@azure-tools/typespec-client-generator-core";
 import {
   isAzurePackage,
@@ -451,10 +449,6 @@ function prepareExampleParameters(
         if (!propExample) {
           continue;
         }
-        // Skip readonly properties as they cannot be set by users
-        if (isReadOnly(prop as SdkModelPropertyType)) {
-          continue;
-        }
         result.push(
           prepareExampleValue(
             dpgContext,
@@ -601,10 +595,6 @@ function getParameterValue(
         }
         const propValue = value.value[propName];
         if (propValue === undefined || propValue === null) {
-          continue;
-        }
-        // Skip readonly properties as they cannot be set by users
-        if (property && isReadOnly(property as SdkModelPropertyType)) {
           continue;
         }
         let propRetValue;

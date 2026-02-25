@@ -72,7 +72,6 @@ export async function _detectMultivariateLastAnomalyDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = multivariateResponseErrorDeserializer(result.body);
-
     throw error;
   }
 
@@ -132,7 +131,6 @@ export async function _detectMultivariateBatchAnomalyDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = multivariateResponseErrorDeserializer(result.body);
-
     throw error;
   }
 
@@ -191,7 +189,6 @@ export async function _getMultivariateModelDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = multivariateResponseErrorDeserializer(result.body);
-
     throw error;
   }
 
@@ -235,7 +232,6 @@ export async function _deleteMultivariateModelDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = multivariateResponseErrorDeserializer(result.body);
-
     throw error;
   }
 
@@ -281,7 +277,6 @@ export async function _listMultivariateModelsDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = multivariateResponseErrorDeserializer(result.body);
-
     throw error;
   }
 
@@ -324,7 +319,6 @@ export async function _trainMultivariateModelDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = multivariateResponseErrorDeserializer(result.body);
-
     throw error;
   }
 
@@ -378,7 +372,6 @@ export async function _getMultivariateBatchDetectionResultDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = multivariateResponseErrorDeserializer(result.body);
-
     throw error;
   }
 

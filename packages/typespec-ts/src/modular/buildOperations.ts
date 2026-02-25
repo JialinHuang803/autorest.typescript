@@ -7,8 +7,6 @@ import {
 } from "ts-morph";
 import {
   getDeserializePrivateFunction,
-  getDeserializeHeadersPrivateFunction,
-  getDeserializeExceptionHeadersPrivateFunction,
   getExpectedStatuses,
   getOperationFunction,
   getOperationOptionsName,
@@ -87,28 +85,16 @@ export function buildOperationFiles(
       const sendOperationDeclaration = getSendPrivateFunction(
         dpgContext,
         [prefixes, op],
-        clientType,
-        client
+        clientType
       );
       const deserializeOperationDeclaration = getDeserializePrivateFunction(
         dpgContext,
         op
       );
-      const deserializeHeadersDeclaration =
-        getDeserializeHeadersPrivateFunction(dpgContext, op);
-      const deserializeExceptionHeadersDeclaration =
-        getDeserializeExceptionHeadersPrivateFunction(dpgContext, op);
-      const functionsToAdd = [
+      operationGroupFile.addFunctions([
         sendOperationDeclaration,
         deserializeOperationDeclaration
-      ];
-      if (deserializeHeadersDeclaration) {
-        functionsToAdd.push(deserializeHeadersDeclaration);
-      }
-      if (deserializeExceptionHeadersDeclaration) {
-        functionsToAdd.push(deserializeExceptionHeadersDeclaration);
-      }
-      operationGroupFile.addFunctions(functionsToAdd);
+      ]);
       addDeclaration(
         operationGroupFile,
         operationDeclaration,

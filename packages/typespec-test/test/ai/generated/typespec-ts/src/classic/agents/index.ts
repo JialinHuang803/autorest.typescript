@@ -112,7 +112,6 @@ import {
   VectorStoreFileDeletionStatus,
   VectorStoreFileBatch,
 } from "../../models/agents/models.js";
-import { FileContents } from "../../static-helpers/multipartHelpers.js";
 
 /** Interface representing a Agents operations. */
 export interface AgentsOperations {
@@ -200,7 +199,7 @@ export interface AgentsOperations {
   /** Uploads a file for use by other operations. */
   uploadFile: (
     body: {
-      file: FileContents | { contents: FileContents; contentType?: string; filename?: string };
+      file: Uint8Array;
       purpose: FilePurpose;
       filename?: string;
     },
@@ -372,7 +371,7 @@ function _getAgents(context: AIProjectContext) {
       deleteFile(context, fileId, options),
     uploadFile: (
       body: {
-        file: FileContents | { contents: FileContents; contentType?: string; filename?: string };
+        file: Uint8Array;
         purpose: FilePurpose;
         filename?: string;
       },

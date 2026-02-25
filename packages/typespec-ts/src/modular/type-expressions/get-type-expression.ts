@@ -1,7 +1,6 @@
 import {
   SdkHttpParameter,
   SdkModelPropertyType,
-  SdkServiceResponseHeader,
   SdkType
 } from "@azure-tools/typespec-client-generator-core";
 import { getCredentialExpression } from "./get-credential-expression.js";
@@ -19,7 +18,7 @@ export interface EmitTypeOptions {
 
 export function normalizeModelPropertyName(
   context: SdkContext,
-  property: SdkModelPropertyType | SdkHttpParameter | SdkServiceResponseHeader
+  property: SdkModelPropertyType | SdkHttpParameter
 ): string {
   const normalizedPropName = normalizeName(property.name, NameType.Property);
   return context.rlcOptions?.ignorePropertyNameNormalize

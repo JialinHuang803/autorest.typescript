@@ -54,8 +54,6 @@ function extractRLCOptions(
   const flavor = getFlavor(emitterOptions, packageDetails);
   const moduleKind = getModuleKind(emitterOptions);
   const serviceInfo = getServiceInfo(program, isModularLibrary);
-  const includeHeadersInResponse =
-    emitterOptions["include-headers-in-response"] === true;
   const azureSdkForJs = getAzureSdkForJs(emitterOptions, flavor);
   const generateMetadata = getGenerateMetadata(emitterOptions);
   const generateTest = getGenerateTest(emitterOptions, flavor);
@@ -102,7 +100,6 @@ function extractRLCOptions(
 
   return {
     ...credentialInfo,
-    includeHeadersInResponse,
     flavor,
     moduleKind,
     includeShortcuts,

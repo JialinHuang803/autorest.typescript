@@ -73,7 +73,6 @@ export async function _listByDataProductDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 
@@ -134,7 +133,6 @@ export async function _generateStorageContainerSasTokenDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 
@@ -196,7 +194,6 @@ export async function _deleteDataDeserialize(result: PathUncheckedResponse): Pro
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 
@@ -250,7 +247,6 @@ export async function _$deleteDeserialize(result: PathUncheckedResponse): Promis
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 
@@ -316,7 +312,6 @@ export async function _updateDeserialize(result: PathUncheckedResponse): Promise
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 
@@ -375,7 +370,6 @@ export async function _getDeserialize(result: PathUncheckedResponse): Promise<Da
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 
@@ -430,7 +424,6 @@ export async function _createDeserialize(result: PathUncheckedResponse): Promise
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 

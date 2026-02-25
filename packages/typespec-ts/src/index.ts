@@ -91,11 +91,7 @@ import { emitLoggerFile } from "./modular/emitLoggerFile.js";
 import { emitTypes } from "./modular/emitModels.js";
 import { existsSync } from "fs";
 import { getModuleExports } from "./modular/buildProjectFiles.js";
-import {
-  getClientHierarchyMap,
-  getRLCClients,
-  getModularClientOptions
-} from "./utils/clientUtils.js";
+import { getClientHierarchyMap, getRLCClients } from "./utils/clientUtils.js";
 import { join } from "path";
 import { loadStaticHelpers } from "./framework/load-static-helpers.js";
 import { packageUsesXmlSerialization } from "./modular/serialization/buildXmlSerializerFunction.js";
@@ -267,7 +263,9 @@ export async function $onEmit(context: EmitContext) {
     for (const client of clients) {
       const rlcModels = await transformRLCModel(client, dpgContext);
       rlcCodeModels.push(rlcModels);
-      const serviceName = client.services[0]?.name ?? "Unknown";
+      const serviceName = Array.isArray(client.service)
+        ? (client.service[0]?.name ?? "Unknown")
+        : client.service.name;
       serviceNameToRlcModelsMap.set(serviceName, rlcModels);
       needUnexpectedHelper.set(
         getClientName(rlcModels),
@@ -321,6 +319,7 @@ export async function $onEmit(context: EmitContext) {
       }
     );
 
+    const isMultiClients = dpgContext.sdkPackage.clients.length > 1;
     emitTypes(dpgContext, { sourceRoot: modularSourcesRoot });
     buildSubpathIndexFile(modularEmitterOptions, "models", undefined, {
       recursive: true
@@ -354,9 +353,7 @@ export async function $onEmit(context: EmitContext) {
         exportIndex: true,
         interfaceOnly: true
       });
-      const { subfolder } = getModularClientOptions(subClient);
-      // Generate index file for clients with subfolders (multi-client scenarios and nested clients)
-      if (subfolder) {
+      if (isMultiClients) {
         buildSubClientIndexFile(dpgContext, subClient, modularEmitterOptions);
       }
       buildRootIndex(
@@ -400,16 +397,14 @@ export async function $onEmit(context: EmitContext) {
   }
 
   function buildMetadataJson() {
-    const apiVersions = dpgContext.sdkPackage.metadata.apiVersions;
+    const apiVersion = dpgContext.sdkPackage.metadata.apiVersion;
     const emitterVersion = getTypespecTsVersion(context);
-    if (apiVersions === undefined && emitterVersion === undefined) {
+    if (apiVersion === undefined && emitterVersion === undefined) {
       return;
     }
     const content: Metadata = {};
-    if (apiVersions !== undefined && apiVersions.size > 0) {
-      // Use the first/latest API version if multiple are available
-      const firstVersion = Array.from(apiVersions.values())[0];
-      content.apiVersion = firstVersion;
+    if (apiVersion !== undefined) {
+      content.apiVersion = apiVersion;
     }
     if (emitterVersion !== undefined) {
       content.emitterVersion = emitterVersion;

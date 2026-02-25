@@ -83,7 +83,6 @@ export async function _getBudgetsDeserialize(result: PathUncheckedResponse): Pro
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = widgetErrorDeserializer(result.body);
-
     throw error;
   }
 

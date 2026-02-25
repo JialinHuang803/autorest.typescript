@@ -15,7 +15,6 @@ import {
 } from "../load-static-helpers.js";
 import path from "path/posix";
 import { normalizePath } from "@typespec/compiler";
-import { generateLocallyUniqueName } from "../../modular/helpers/namingHelpers.js";
 
 export interface DeclarationInfo {
   name: string;
@@ -97,7 +96,7 @@ class BinderImp implements Binder {
   ): string {
     const existingNamesInFile =
       this.symbolsBySourceFile.get(sourceFile) ?? new Set<string>();
-    return generateLocallyUniqueName(name, existingNamesInFile);
+    return this.generateLocallyUniqueName(name, existingNamesInFile);
   }
 
   /**
@@ -114,20 +113,31 @@ class BinderImp implements Binder {
       .flatMap((i) => i.namedImports as ImportSpecifierStructure[])
       .map((i) => i.alias ?? i.name);
 
-    // Also check actual imports already added to the source file (e.g., manual imports)
-    const actualImports = sourceFile
-      .getImportDeclarations()
-      .flatMap((imp) => imp.getNamedImports())
-      .map(
-        (namedImp) => namedImp.getAliasNode()?.getText() ?? namedImp.getName()
-      );
-
     const existingDeclarations =
       this.symbolsBySourceFile.get(sourceFile) ?? new Set<string>();
-    return generateLocallyUniqueName(
+    return this.generateLocallyUniqueName(
       name,
-      new Set([...existingImports, ...actualImports, ...existingDeclarations])
+      new Set([...existingImports, ...existingDeclarations])
     );
+  }
+
+  /**
+   * Generates a locally unique name within a set of existing names.
+   * @param name - The base name.
+   * @param existingNames - A set of names already in use.
+   * @returns A unique name not present in the existing names set.
+   */
+  private generateLocallyUniqueName(
+    name: string,
+    existingNames: Set<string>
+  ): string {
+    let uniqueName = name;
+    let counter = 1;
+    while (existingNames.has(uniqueName)) {
+      uniqueName = `${name}_${counter}`;
+      counter++;
+    }
+    return uniqueName;
   }
 
   /**

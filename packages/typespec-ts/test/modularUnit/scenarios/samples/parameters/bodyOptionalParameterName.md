@@ -192,7 +192,6 @@ export async function _backupDeserialize(result: PathUncheckedResponse): Promise
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 
@@ -263,7 +262,7 @@ model BodyParameter {
 }
 @doc("This is a model with all http request decorator.")
 model CompositeRequest {
-
+  
   @path
   name: string;
 

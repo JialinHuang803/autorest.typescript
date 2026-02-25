@@ -173,15 +173,8 @@ const OUTPUT_CODE_BLOCK_TYPES: Record<string, EmitterFunction> = {
 
   // Snapshot of a specific function in the operations definitions
   // Throws if more than one operations group generated
-  "(ts|typescript) operations function {name}": async (
-    tsp,
-    { name },
-    namedUnknownArgs
-  ) => {
-    const configs = namedUnknownArgs
-      ? (namedUnknownArgs["configs"] as Record<string, string>)
-      : {};
-    const result = await emitModularOperationsFromTypeSpec(tsp, configs);
+  "(ts|typescript) operations function {name}": async (tsp, { name }) => {
+    const result = await emitModularOperationsFromTypeSpec(tsp);
     assert.equal(result?.length, 1, "Expected exactly 1 source file");
     return result![0]!.getFunctionOrThrow(name!).getText();
   },

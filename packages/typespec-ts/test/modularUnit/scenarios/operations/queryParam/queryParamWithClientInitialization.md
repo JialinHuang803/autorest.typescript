@@ -61,7 +61,7 @@ model SavingsPlanModel extends Azure.ResourceManager.Foundations.ProxyResource {
   >;
 
   sku: ResourceSku;
-
+  
   @doc("The resource-specific properties for this resource.")
   properties?: SavingsPlanModelProperties;
 }
@@ -200,7 +200,6 @@ export async function _getDeserialize(result: PathUncheckedResponse): Promise<Sa
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 
@@ -293,7 +292,7 @@ model SavingsPlanModel extends Azure.ResourceManager.Foundations.ProxyResource {
   >;
 
   sku: ResourceSku;
-
+  
   @doc("The resource-specific properties for this resource.")
   properties?: SavingsPlanModelProperties;
 }
@@ -430,7 +429,6 @@ export async function _getDeserialize(result: PathUncheckedResponse): Promise<Sa
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = errorResponseDeserializer(result.body);
-
     throw error;
   }
 

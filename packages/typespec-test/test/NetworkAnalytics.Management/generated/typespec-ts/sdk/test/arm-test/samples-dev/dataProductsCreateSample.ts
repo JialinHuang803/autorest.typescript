@@ -15,6 +15,7 @@ async function dataProductsCreateMaximumSetGen(): Promise<void> {
   const subscriptionId = "00000000-0000-0000-0000-00000000000";
   const client = new NetworkAnalyticsApi(credential, subscriptionId);
   const result = await client.dataProducts.create("aoiresourceGroupName", "dataproduct01", {
+    provisioningState: "Succeeded",
     publisher: "Microsoft",
     product: "MCC",
     majorVersion: "1.0.0",
@@ -44,6 +45,7 @@ async function dataProductsCreateMaximumSetGen(): Promise<void> {
     },
     managedResourceGroupConfiguration: { name: "managedResourceGroupName", location: "eastus" },
     currentMinorVersion: "1.0.1",
+    consumptionEndpoints: {},
     identity: {
       type: "UserAssigned",
       userAssignedIdentities: {

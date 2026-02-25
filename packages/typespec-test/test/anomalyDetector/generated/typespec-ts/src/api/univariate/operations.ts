@@ -49,7 +49,6 @@ export async function _detectUnivariateChangePointDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = univariateAnomalyDetectorErrorDeserializer(result.body);
-
     throw error;
   }
 
@@ -88,7 +87,6 @@ export async function _detectUnivariateLastPointDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = univariateAnomalyDetectorErrorDeserializer(result.body);
-
     throw error;
   }
 
@@ -130,7 +128,6 @@ export async function _detectUnivariateEntireSeriesDeserialize(
   if (!expectedStatuses.includes(result.status)) {
     const error = createRestError(result);
     error.details = univariateAnomalyDetectorErrorDeserializer(result.body);
-
     throw error;
   }
 
