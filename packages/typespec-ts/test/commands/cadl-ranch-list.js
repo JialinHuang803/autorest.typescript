@@ -695,6 +695,10 @@ export const azureModularTsps = [
     inputPath: "type/model/inheritance/single-discriminator"
   },
   {
+    outputPath: "encode/array",
+    inputPath: "encode/array"
+  },
+  {
     outputPath: "encode/bytes",
     inputPath: "encode/bytes"
   },
