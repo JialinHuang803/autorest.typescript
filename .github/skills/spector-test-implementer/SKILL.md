@@ -30,7 +30,11 @@ npm view @typespec/http-specs dist-tags.next
 npm view @azure-tools/azure-http-specs dist-tags.next
 ```
 
-Compare with the versions in `packages/typespec-ts/package.json`. If newer versions exist, update `package.json` and run `pnpm install` before proceeding.
+Compare the output versions with the versions listed in the `devDependencies` section of `packages/typespec-ts/package.json`. If either package has a newer version:
+
+1. Edit `packages/typespec-ts/package.json` — update the version string for the package(s) in `devDependencies`.
+2. Run `pnpm install` at the repo root to update `pnpm-lock.yaml`.
+3. Both `packages/typespec-ts/package.json` and `pnpm-lock.yaml` must be committed with your changes.
 
 For each test case path (e.g., `encode/numeric`):
 
