@@ -86,12 +86,12 @@ This step has two phases: first create the config and generate the client, then 
 **Phase 1 -- tspconfig.yaml, .gitignore, and generation:**
 
 1. Create `test/azureModularIntegration/generated/<path>/tspconfig.yaml` using the [tspconfig template](references/naming-and-templates.md#tspconfig-template) exactly as-is.
-2. Create `test/azureModularIntegration/generated/<path>/.gitignore` with the content shown in [Expected Output Files](#expected-output-files).
+2. Create `test/azureModularIntegration/generated/<path>/.gitignore` with the content shown in [.gitignore template](references/naming-and-templates.md#gitignore-template)
 3. Generate the client by running:
    ```bash
    npx tsx ./test/commands/gen-cadl-ranch.js --tag=azure-modular --filter=<path>
    ```
-3. Read `test/azureModularIntegration/generated/<path>/src/index.ts` to discover the client class name, method signatures, and operation groups.
+4. Read `test/azureModularIntegration/generated/<path>/src/index.ts` to discover the client class name, method signatures, and operation groups.
 
 **Phase 2 -- .spec.ts file:**
 
@@ -134,15 +134,15 @@ After running tests, report to the user:
 
 For each new test path, these are the files that should be committed:
 
-| File | Action |
-| --- | --- |
-| `test/commands/cadl-ranch-list.js` | Modified (new entry in `azureModularTsps`) |
-| `test/azureModularIntegration/generated/<path>/.gitignore` | Created |
-| `test/azureModularIntegration/generated/<path>/tspconfig.yaml` | Created |
-| `test/azureModularIntegration/generated/<path>/src/index.d.ts` | Generated (by gen-cadl-ranch.js) |
-| `test/azureModularIntegration/<camelCaseName>.spec.ts` | Created |
-
-The `.gitignore` ensures only `tspconfig.yaml`, `src/index.d.ts`, and `.gitignore` itself are tracked. See the [.gitignore template](references/naming-and-templates.md#gitignore-template).
+| File                                                           | Action                                             |
+| -------------------------------------------------------------- | -------------------------------------------------- |
+| `packages/typespec-ts/package.json`                            | Modified (if spec versions were updated in Step 0) |
+| `pnpm-lock.yaml`                                               | Modified (if spec versions were updated in Step 0) |
+| `test/commands/cadl-ranch-list.js`                             | Modified (new entry in `azureModularTsps`)         |
+| `test/azureModularIntegration/generated/<path>/.gitignore`     | Created                                            |
+| `test/azureModularIntegration/generated/<path>/tspconfig.yaml` | Created                                            |
+| `test/azureModularIntegration/generated/<path>/src/index.d.ts` | Generated (by gen-cadl-ranch.js)                   |
+| `test/azureModularIntegration/<camelCaseName>.spec.ts`         | Created                                            |
 
 Do **not** commit these files:
 
