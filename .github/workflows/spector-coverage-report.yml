@@ -88,16 +88,24 @@ jobs:
             if (allNotImplemented.length === 0) {
               body += `🎉 All scenarios are implemented!\n`;
             } else {
-              const grouped = {};
+              // Group by package, then by group name (all segments except the last)
+              const byPackage = {};
               for (const item of allNotImplemented) {
-                if (!grouped[item.package]) grouped[item.package] = [];
-                grouped[item.package].push(item.name);
+                if (!byPackage[item.package]) byPackage[item.package] = {};
+                const parts = item.name.split('_');
+                const group = parts.slice(0, -1).join('_');
+                const scenario = parts[parts.length - 1];
+                if (!byPackage[item.package][group]) byPackage[item.package][group] = [];
+                byPackage[item.package][group].push(scenario);
               }
 
-              for (const [pkg, scenarios] of Object.entries(grouped)) {
-                body += `### \`${pkg}\` (${scenarios.length} not implemented)\n\n`;
-                for (const name of scenarios.sort()) {
-                  body += `- [ ] \`${name}\`\n`;
+              for (const [pkg, groups] of Object.entries(byPackage)) {
+                const totalInPkg = Object.values(groups).reduce((sum, s) => sum + s.length, 0);
+                body += `### \`${pkg}\` (${totalInPkg} not implemented)\n\n`;
+                body += `| Group | Count | Scenarios |\n`;
+                body += `|-------|------:|-----------|\n`;
+                for (const [group, scenarios] of Object.entries(groups).sort(([a], [b]) => a.localeCompare(b))) {
+                  body += `| \`${group}\` | ${scenarios.length} | ${scenarios.sort().join(', ')} |\n`;
                 }
                 body += `\n`;
               }
