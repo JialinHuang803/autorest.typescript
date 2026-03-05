@@ -22,6 +22,7 @@ jobs:
         id: build-task
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.COPILOT_ASSIGN_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             let notImplemented = {};
             let coverageIssueNumber = null;
@@ -32,7 +33,6 @@ jobs:
               coverageIssueNumber = context.payload.client_payload.issue_number;
             } else {
               // For manual trigger, fetch not-implemented scenarios from the latest coverage report issue
-              // Find the latest coverage report issue (title starts with "Spector Coverage Report")
               const { data: issues } = await github.rest.issues.listForRepo({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -138,7 +138,7 @@ jobs:
 
             core.info(`Created Copilot task issue #${issue.data.number}`);
 
-            // Try to assign copilot — this only works if the Copilot coding agent is enabled
+            // Assign Copilot using the PAT token (GITHUB_TOKEN cannot trigger Copilot agent)
             try {
               await github.rest.issues.addAssignees({
                 owner: context.repo.owner,
@@ -146,9 +146,20 @@ jobs:
                 issue_number: issue.data.number,
                 assignees: ['Copilot']
               });
-              core.info('Assigned issue to Copilot coding agent');
+              // Verify the assignment actually took effect
+              const { data: updatedIssue } = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.data.number
+              });
+              const assigned = updatedIssue.assignees.some(a => a.login.toLowerCase() === 'copilot');
+              if (assigned) {
+                core.info('Successfully assigned issue to Copilot coding agent');
+              } else {
+                core.warning('addAssignees returned OK but Copilot is not in assignees. Make sure COPILOT_ASSIGN_TOKEN secret is set with a PAT that has issues:write scope.');
+              }
             } catch (err) {
-              core.warning(`Could not assign to copilot (is the Copilot coding agent enabled?): ${err.message}`);
+              core.warning(`Could not assign to Copilot: ${err.message}. Make sure COPILOT_ASSIGN_TOKEN secret is set.`);
             }
 
             core.setOutput('task_issue_number', issue.data.number);
