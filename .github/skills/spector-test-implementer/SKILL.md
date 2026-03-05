@@ -21,7 +21,7 @@ Skip if the user confirms these have already been run.
 
 ## Workflow
 
-### Step 0: Ensure Specs Are Up-to-Date
+### Step 0: Ensure Specs Are Up-to-Date (Mandatory — Do Not Skip)
 
 Check if newer dev versions of the spec packages are available:
 
@@ -34,7 +34,10 @@ Compare the output versions with the versions listed in the `devDependencies` se
 
 1. Edit `packages/typespec-ts/package.json` — update the version string for the package(s) in `devDependencies`.
 2. Run `pnpm install` at the repo root to update `pnpm-lock.yaml`.
-3. Both `packages/typespec-ts/package.json` and `pnpm-lock.yaml` must be committed with your changes.
+3. Run `pnpm build` at the repo root to rebuild with the new versions.
+4. Both `packages/typespec-ts/package.json` and `pnpm-lock.yaml` must be committed with your changes.
+
+**This step must always be performed, even if the user has already run `pnpm install` and `pnpm build`.** Skipping this step may cause tests to run against outdated spec definitions.
 
 For each test case path (e.g., `encode/numeric`):
 
