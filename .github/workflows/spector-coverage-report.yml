@@ -8,6 +8,7 @@ on:
 
 permissions:
   issues: write
+  contents: write
 
 jobs:
   spector-coverage-report:
@@ -44,6 +45,7 @@ jobs:
         timeout-minutes: 60
 
       - name: Create coverage report issue
+        id: create-issue
         uses: actions/github-script@v7
         with:
           script: |
@@ -85,20 +87,20 @@ jobs:
 
             body += `\n## Not-Implemented Scenarios (${allNotImplemented.length})\n\n`;
 
+            // Build grouped data for both the report and the dispatch payload
+            const byPackage = {};
+            for (const item of allNotImplemented) {
+              if (!byPackage[item.package]) byPackage[item.package] = {};
+              const parts = item.name.split('_');
+              const group = parts.slice(0, -1).join('_');
+              const scenario = parts[parts.length - 1];
+              if (!byPackage[item.package][group]) byPackage[item.package][group] = [];
+              byPackage[item.package][group].push(scenario);
+            }
+
             if (allNotImplemented.length === 0) {
               body += `🎉 All scenarios are implemented!\n`;
             } else {
-              // Group by package, then by group name (all segments except the last)
-              const byPackage = {};
-              for (const item of allNotImplemented) {
-                if (!byPackage[item.package]) byPackage[item.package] = {};
-                const parts = item.name.split('_');
-                const group = parts.slice(0, -1).join('_');
-                const scenario = parts[parts.length - 1];
-                if (!byPackage[item.package][group]) byPackage[item.package][group] = [];
-                byPackage[item.package][group].push(scenario);
-              }
-
               for (const [pkg, groups] of Object.entries(byPackage)) {
                 const totalInPkg = Object.values(groups).reduce((sum, s) => sum + s.length, 0);
                 body += `### \`${pkg}\` (${totalInPkg} not implemented)\n\n`;
@@ -111,10 +113,33 @@ jobs:
               }
             }
 
-            await github.rest.issues.create({
+            const issue = await github.rest.issues.create({
               owner: 'JialinHuang803',
               repo: 'autorest.typescript',
               title: `Spector Coverage Report — ${today}`,
               body: body,
               labels: ['spector-coverage']
             });
+
+            // Output issue number and not-implemented groups for the dispatch step
+            core.setOutput('issue_number', issue.data.number);
+            core.setOutput('not_implemented', JSON.stringify(byPackage));
+
+      - name: Trigger auto-tests workflow
+        if: steps.create-issue.outputs.not_implemented != '{}'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const notImplemented = JSON.parse(process.env.NOT_IMPLEMENTED);
+            await github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'spector-auto-tests',
+              client_payload: {
+                issue_number: parseInt(process.env.ISSUE_NUMBER),
+                not_implemented: notImplemented
+              }
+            });
+        env:
+          ISSUE_NUMBER: ${{ steps.create-issue.outputs.issue_number }}
+          NOT_IMPLEMENTED: ${{ steps.create-issue.outputs.not_implemented }}
