@@ -1,0 +1,120 @@
+name: Spector Auto Tests - Copilot Agent
+
+on:
+  repository_dispatch:
+    types: [spector-auto-tests]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Coverage report issue number to comment results on"
+        required: false
+        type: number
+
+permissions:
+  issues: write
+  contents: write
+
+jobs:
+  trigger-copilot-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Copilot agent task issue
+        id: build-task
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let notImplemented = {};
+            let coverageIssueNumber = null;
+
+            // Get data from dispatch payload or workflow inputs
+            if (context.eventName === 'repository_dispatch') {
+              notImplemented = context.payload.client_payload.not_implemented || {};
+              coverageIssueNumber = context.payload.client_payload.issue_number;
+            } else {
+              // For manual trigger, read the coverage JSON from the repo
+              const fs = require('fs');
+              const path = require('path');
+              const coveragePath = path.join(
+                process.env.GITHUB_WORKSPACE,
+                'packages/typespec-ts/coverage/spector-coverage-typescript-modular-azure.json'
+              );
+
+              if (fs.existsSync(coveragePath)) {
+                const data = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
+                for (const entry of data) {
+                  const pkg = entry.scenariosMetadata.packageName;
+                  for (const [name, status] of Object.entries(entry.results)) {
+                    if (status === 'not-implemented') {
+                      if (!notImplemented[pkg]) notImplemented[pkg] = {};
+                      const parts = name.split('_');
+                      const group = parts.slice(0, -1).join('_');
+                      const scenario = parts[parts.length - 1];
+                      if (!notImplemented[pkg][group]) notImplemented[pkg][group] = [];
+                      notImplemented[pkg][group].push(scenario);
+                    }
+                  }
+                }
+              }
+
+              coverageIssueNumber = parseInt(process.env.INPUT_ISSUE_NUMBER) || null;
+            }
+
+            // Build the list of scenario groups for the agent prompt
+            const groups = [];
+            for (const [pkg, pkgGroups] of Object.entries(notImplemented)) {
+              for (const [group, scenarios] of Object.entries(pkgGroups)) {
+                groups.push(`- \`${group}\` (${scenarios.length} scenarios: ${scenarios.join(', ')})`);
+              }
+            }
+
+            const groupList = groups.join('\n');
+            const coverageRef = coverageIssueNumber
+              ? `\nResults should be commented on issue #${coverageIssueNumber}.`
+              : '';
+
+            const taskBody = [
+              `## Task: Implement Spector Integration Tests`,
+              ``,
+              `Use the \`spector-test-implementer\` skill to implement test files for the following not-implemented scenario groups.`,
+              ``,
+              `**Target branch:** \`copilot/spector-auto-tests\` (create from \`main\` if it doesn't exist)`,
+              ``,
+              `**Not-implemented scenario groups:**`,
+              groupList,
+              ``,
+              `**Instructions:**`,
+              `1. Check out the \`copilot/spector-auto-tests\` branch (create from \`main\` if it doesn't exist). If it already exists, merge \`main\` into it first to stay up-to-date.`,
+              `2. For each scenario group above, check if a \`.spec.ts\` file already exists in \`packages/typespec-ts/test/azureModularIntegration/\` — skip if it does`,
+              `3. For remaining groups, follow the spector-test-implementer workflow to implement the tests`,
+              `4. Commit all changes to \`copilot/spector-auto-tests\``,
+              `5. Report which tests passed and which failed`,
+              coverageRef
+            ].filter(Boolean).join('\n');
+
+            // Create an issue assigned to copilot
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Copilot] Implement spector tests for ${groups.length} scenario groups`,
+              body: taskBody,
+              labels: ['spector-coverage', 'copilot'],
+              assignees: ['copilot']
+            });
+
+            core.info(`Created Copilot task issue #${issue.data.number}`);
+            core.setOutput('task_issue_number', issue.data.number);
+
+            // If we have a coverage issue, add a cross-reference comment
+            if (coverageIssueNumber) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: coverageIssueNumber,
+                body: `🤖 Copilot coding agent has been triggered to implement tests for ${groups.length} not-implemented scenario groups.\n\nTracking issue: #${issue.data.number}`
+              });
+            }
+        env:
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
