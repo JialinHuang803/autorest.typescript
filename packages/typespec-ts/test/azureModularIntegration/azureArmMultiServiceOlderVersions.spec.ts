@@ -10,23 +10,13 @@ describe("Azure Resource Manager MultiServiceOlderVersions Client", () => {
   const expectedVirtualMachine = {
     id: `/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Compute/virtualMachinesOld/vm-old1`,
     name: "vm-old1",
-    type: "Microsoft.Compute/virtualMachinesOld",
-    location: "eastus",
-    properties: {
-      provisioningState: "Succeeded",
-      size: "Standard_D2s_v3"
-    }
+    location: "eastus"
   };
 
   const expectedDisk = {
     id: `/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Compute/disksOld/disk-old1`,
     name: "disk-old1",
-    type: "Microsoft.Compute/disksOld",
-    location: "eastus",
-    properties: {
-      provisioningState: "Succeeded",
-      diskSizeGB: 128
-    }
+    location: "eastus"
   };
 
   beforeEach(() => {
@@ -57,7 +47,7 @@ describe("Azure Resource Manager MultiServiceOlderVersions Client", () => {
         }
       }
     );
-    const result = await (await poller).pollUntilDone();
+    const result = await poller.pollUntilDone();
     assert.strictEqual(result.name, expectedVirtualMachine.name);
   });
 
@@ -79,7 +69,7 @@ describe("Azure Resource Manager MultiServiceOlderVersions Client", () => {
         }
       }
     );
-    const result = await (await poller).pollUntilDone();
+    const result = await poller.pollUntilDone();
     assert.strictEqual(result.name, expectedDisk.name);
   });
 });

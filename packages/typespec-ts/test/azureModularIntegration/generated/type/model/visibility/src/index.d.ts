@@ -46,6 +46,7 @@ export declare interface VisibilityClientOptionalParams extends ClientOptions {
 
 export declare interface VisibilityModel {
     readonly readProp: string;
+    queryProp?: number;
     createProp: string[];
     updateProp: number[];
     deleteProp: boolean;

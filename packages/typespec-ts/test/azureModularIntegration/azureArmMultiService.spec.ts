@@ -53,7 +53,7 @@ describe("Azure Resource Manager MultiService Client", () => {
         properties: {}
       }
     );
-    const result = await (await poller).pollUntilDone();
+    const result = await poller.pollUntilDone();
     assert.strictEqual(result.name, expectedVirtualMachine.name);
   });
 
@@ -73,7 +73,7 @@ describe("Azure Resource Manager MultiService Client", () => {
         properties: {}
       }
     );
-    const result = await (await poller).pollUntilDone();
+    const result = await poller.pollUntilDone();
     assert.strictEqual(result.name, expectedDisk.name);
   });
 });

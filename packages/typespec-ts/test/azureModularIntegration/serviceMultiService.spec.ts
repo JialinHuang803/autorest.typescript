@@ -1,4 +1,3 @@
-import { assert } from "chai";
 import { Combined } from "./generated/service/multi-service/src/index.js";
 
 describe("Service MultiService Client", () => {

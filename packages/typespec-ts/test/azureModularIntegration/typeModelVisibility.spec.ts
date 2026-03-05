@@ -33,8 +33,9 @@ describe("Type Model Visibility Client", () => {
   it("should head model", async () => {
     await client.headModel({
       readProp: "abc",
+      queryProp: 123,
       createProp: [],
-      updateProp: [123],
+      updateProp: [1, 2],
       deleteProp: false
     });
   });
@@ -42,8 +43,9 @@ describe("Type Model Visibility Client", () => {
   it("should get model", async () => {
     const result = await client.getModel({
       readProp: "abc",
+      queryProp: 123,
       createProp: [],
-      updateProp: [123],
+      updateProp: [1, 2],
       deleteProp: false
     });
     assert.strictEqual(result.readProp, "abc");

@@ -10,19 +10,13 @@ describe("Azure Resource Manager MultiServiceSharedModels Client", () => {
   const expectedVirtualMachine = {
     id: `/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Compute/virtualMachinesShared/vm-shared1`,
     name: "vm-shared1",
-    location: "eastus",
-    properties: {
-      provisioningState: "Succeeded"
-    }
+    location: "eastus"
   };
 
   const expectedStorageAccount = {
     id: `/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Storage/storageAccounts/account1`,
     name: "account1",
-    location: "westus",
-    properties: {
-      provisioningState: "Succeeded"
-    }
+    location: "westus"
   };
 
   beforeEach(() => {
@@ -48,10 +42,17 @@ describe("Azure Resource Manager MultiServiceSharedModels Client", () => {
       "vm-shared1",
       {
         location: "eastus",
-        properties: {}
+        properties: {
+          metadata: {
+            createdBy: "user@example.com",
+            tags: {
+              environment: "production"
+            }
+          }
+        }
       }
     );
-    const result = await (await poller).pollUntilDone();
+    const result = await poller.pollUntilDone();
     assert.strictEqual(result.name, expectedVirtualMachine.name);
   });
 
@@ -68,10 +69,17 @@ describe("Azure Resource Manager MultiServiceSharedModels Client", () => {
       "account1",
       {
         location: "westus",
-        properties: {}
+        properties: {
+          metadata: {
+            createdBy: "admin@example.com",
+            tags: {
+              department: "engineering"
+            }
+          }
+        }
       }
     );
-    const result = await (await poller).pollUntilDone();
+    const result = await poller.pollUntilDone();
     assert.strictEqual(result.name, expectedStorageAccount.name);
   });
 });

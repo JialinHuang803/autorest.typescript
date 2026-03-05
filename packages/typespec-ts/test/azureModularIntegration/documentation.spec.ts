@@ -1,4 +1,3 @@
-import { assert } from "chai";
 import { DocumentationClient } from "./generated/documentation/src/index.js";
 
 describe("Documentation Client", () => {

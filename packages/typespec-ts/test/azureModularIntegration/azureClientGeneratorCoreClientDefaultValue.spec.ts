@@ -31,6 +31,9 @@ describe("Azure Client Generator Core ClientDefaultValue Client", () => {
   });
 
   it("should get with header parameter defaults", async () => {
-    await client.getHeaderParameter();
+    await client.getHeaderParameter({
+      accept: "application/json;odata.metadata=none",
+      customHeader: "default-value"
+    });
   });
 });

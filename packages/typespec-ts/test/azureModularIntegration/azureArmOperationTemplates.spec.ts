@@ -240,7 +240,7 @@ describe("Azure ARM Operation Templates", () => {
 
   describe("Lro - exportArray", () => {
     it("should export array with LRO", async () => {
-      const poller = await client.lro.exportArray({ format: "csv" });
+      const poller = client.lro.exportArray({ format: "csv" });
       const result = await poller.pollUntilDone();
       assert.isArray(result);
       assert.strictEqual(result.length, 2);
