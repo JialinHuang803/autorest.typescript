@@ -83,6 +83,12 @@ jobs:
             }
 
             const groupList = groups.join('\n');
+
+            if (groups.length === 0) {
+              core.info('No not-implemented scenario groups found. Skipping issue creation.');
+              return;
+            }
+
             const coverageRef = coverageIssueNumber
               ? `\nResults should be commented on issue #${coverageIssueNumber}.`
               : '';
@@ -92,17 +98,32 @@ jobs:
               ``,
               `Use the \`spector-test-implementer\` skill to implement test files for the following not-implemented scenario groups.`,
               ``,
-              `**Target branch:** \`copilot/spector-auto-tests\` (create from \`main\` if it doesn't exist)`,
-              ``,
               `**Not-implemented scenario groups:**`,
               groupList,
               ``,
               `**Instructions:**`,
-              `1. Check out the \`copilot/spector-auto-tests\` branch (create from \`main\` if it doesn't exist). If it already exists, merge \`main\` into it first to stay up-to-date.`,
-              `2. For each scenario group above, check if a \`.spec.ts\` file already exists in \`packages/typespec-ts/test/azureModularIntegration/\` — skip if it does`,
-              `3. For remaining groups, follow the spector-test-implementer workflow to implement the tests`,
-              `4. Commit all changes to \`copilot/spector-auto-tests\``,
-              `5. Report which tests passed and which failed`,
+              `1. For each scenario group above, check if a \`.spec.ts\` file already exists in \`packages/typespec-ts/test/azureModularIntegration/\` — skip if it does`,
+              `2. For remaining groups, follow the spector-test-implementer workflow to implement the tests`,
+              `3. Report which tests passed and which failed`,
+              ``,
+              `**PR description format:**`,
+              `The PR description must use this format for each section:`,
+              ``,
+              `### New spec files`,
+              ``,
+              `For each newly created .spec.ts file, use this structure:`,
+              `- **\`Scenario_Group_Name\`** — \`scenarioGroupName.spec.ts\``,
+              `  - ✅ \`scenarioName1\``,
+              `  - ✅ \`scenarioName2\``,
+              `  - ❌ \`scenarioName3\` (reason for failure)`,
+              ``,
+              `### Updated existing spec files`,
+              ``,
+              `Same structure as above, but for spec files that already existed and were updated with new scenarios.`,
+              ``,
+              `### Known skips / emitter limitations`,
+              ``,
+              `List any scenarios that were skipped due to emitter bugs or limitations, with the reason.`,
               coverageRef
             ].filter(Boolean).join('\n');
 
