@@ -138,28 +138,17 @@ jobs:
 
             core.info(`Created Copilot task issue #${issue.data.number}`);
 
-            // Assign Copilot using the PAT token (GITHUB_TOKEN cannot trigger Copilot agent)
+            // Assign Copilot coding agent (REST API requires 'copilot-swe-agent[bot]' login)
             try {
               await github.rest.issues.addAssignees({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.data.number,
-                assignees: ['Copilot']
+                assignees: ['copilot-swe-agent[bot]']
               });
-              // Verify the assignment actually took effect
-              const { data: updatedIssue } = await github.rest.issues.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.data.number
-              });
-              const assigned = updatedIssue.assignees.some(a => a.login.toLowerCase() === 'copilot');
-              if (assigned) {
-                core.info('Successfully assigned issue to Copilot coding agent');
-              } else {
-                core.warning('addAssignees returned OK but Copilot is not in assignees. Make sure COPILOT_ASSIGN_TOKEN secret is set with a PAT that has issues:write scope.');
-              }
+              core.info('Successfully assigned issue to Copilot coding agent');
             } catch (err) {
-              core.warning(`Could not assign to Copilot: ${err.message}. Make sure COPILOT_ASSIGN_TOKEN secret is set.`);
+              core.warning(`Could not assign Copilot coding agent: ${err.message}`);
             }
 
             core.setOutput('task_issue_number', issue.data.number);
