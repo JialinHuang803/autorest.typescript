@@ -53,4 +53,14 @@ describe("Service Driven old Client v2", () => {
     const result = await client.fromOneRequired("required");
     assert.isUndefined(result);
   });
+
+  it("should break the glass and call new operation from v1 client on v2 service", async () => {
+    const response = await fetch(
+      "http://localhost:3002/resiliency/service-driven/client:v1/service:v2/api-version:v2/add-operation",
+      {
+        method: "DELETE"
+      }
+    );
+    assert.strictEqual(response.status, 204);
+  });
 });
