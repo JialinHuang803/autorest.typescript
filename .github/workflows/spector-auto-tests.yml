@@ -94,17 +94,30 @@ jobs:
               coverageRef
             ].filter(Boolean).join('\n');
 
-            // Create an issue assigned to copilot
+            // Create the task issue (without assignee to avoid validation errors)
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `[Copilot] Implement spector tests for ${groups.length} scenario groups`,
               body: taskBody,
-              labels: ['spector-coverage', 'copilot'],
-              assignees: ['copilot']
+              labels: ['spector-coverage']
             });
 
             core.info(`Created Copilot task issue #${issue.data.number}`);
+
+            // Try to assign copilot — this only works if the Copilot coding agent is enabled
+            try {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.data.number,
+                assignees: ['copilot']
+              });
+              core.info('Assigned issue to Copilot coding agent');
+            } catch (err) {
+              core.warning(`Could not assign to copilot (is the Copilot coding agent enabled?): ${err.message}`);
+            }
+
             core.setOutput('task_issue_number', issue.data.number);
 
             // If we have a coverage issue, add a cross-reference comment
