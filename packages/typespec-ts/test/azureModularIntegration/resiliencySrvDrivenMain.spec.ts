@@ -1,4 +1,6 @@
 import { ResiliencyServiceDrivenClient } from "./generated/resiliency/srv-driven-main/src/index.js";
+import { ResiliencyServiceDrivenClient as ResiliencyServiceDrivenOldClient } from "./generated/resiliency/srv-driven-old/src/index.js";
+import { createDefaultHttpClient, createPipelineRequest } from "@azure/core-rest-pipeline";
 import { assert } from "chai";
 describe("Service Driven new Client v1", () => {
   let client: ResiliencyServiceDrivenClient;
@@ -67,5 +69,32 @@ describe("Service Driven new Client v2", () => {
   it("should work with add operation", async () => {
     const result = await client.addOperation();
     assert.isUndefined(result);
+  });
+});
+
+describe("Resiliency ServiceDriven breakTheGlass", () => {
+  it("should break the glass using v1 client to call v2-only operation", async () => {
+    // 'Break the glass' scenario: uses the old v1-compiled client (URL contains client:v1)
+    // with v2 service deployment and v2 api-version to call the new 'add-operation'
+    // endpoint that only exists in v2. The v1 client doesn't expose addOperation as a
+    // typed method, so we use the raw HTTP pipeline to access the v2 endpoint directly.
+    const oldClient = new ResiliencyServiceDrivenOldClient(
+      "http://localhost:3002",
+      "v2",
+      {
+        allowInsecureConnection: true,
+        apiVersion: "v2"
+      }
+    );
+
+    const httpClient = createDefaultHttpClient();
+    const request = createPipelineRequest({
+      url: "http://localhost:3002/resiliency/service-driven/client:v1/service:v2/api-version:v2/add-operation",
+      method: "DELETE",
+      allowInsecureConnection: true
+    });
+
+    const response = await oldClient.pipeline.sendRequest(httpClient, request);
+    assert.strictEqual(response.status, 204);
   });
 });

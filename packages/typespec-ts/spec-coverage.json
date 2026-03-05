@@ -1,0 +1,11 @@
+[
+  {
+    "scenariosMetadata": {
+      "commit": "df13775eefab9d5df28f26da0d8bb79ee2b15b1a",
+      "version": "0.50.0",
+      "packageName": "@azure-tools/typespec-ts"
+    },
+    "results": {},
+    "createdAt": "2026-03-05T09:30:33.073Z"
+  }
+]

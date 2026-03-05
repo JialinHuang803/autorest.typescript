@@ -199,4 +199,49 @@ describe("Payload XML Client", () => {
       await client.modelWithEncodedNamesValue.put(expected);
     });
   });
+
+  describe("ModelWithEnumValue", () => {
+    const expected = {
+      status: "success" as const
+    };
+
+    it("should get model with enum value", async () => {
+      const result = await client.modelWithEnumValue.get();
+      assert.deepEqual(result, expected);
+    });
+
+    it("should put model with enum value", async () => {
+      await client.modelWithEnumValue.put(expected);
+    });
+  });
+
+  describe("ModelWithDatetimeValue", () => {
+    it("should get model with datetime value", async () => {
+      const result = await client.modelWithDatetimeValue.get();
+      assert.instanceOf(result.rfc3339, Date);
+      assert.instanceOf(result.rfc7231, Date);
+      assert.strictEqual(
+        result.rfc3339.toISOString(),
+        "2022-08-26T18:38:00.000Z"
+      );
+    });
+
+    it("should put model with datetime value", async () => {
+      await client.modelWithDatetimeValue.put({
+        rfc3339: new Date("2022-08-26T18:38:00.000Z"),
+        rfc7231: new Date("Fri, 26 Aug 2022 14:38:00 GMT")
+      });
+    });
+  });
+
+  describe("XmlErrorValue", () => {
+    it("should get xml error response", async () => {
+      try {
+        await client.xmlErrorValue.get();
+        assert.fail("Expected an error to be thrown");
+      } catch (error: any) {
+        assert.strictEqual(error.statusCode, 400);
+      }
+    });
+  });
 });
