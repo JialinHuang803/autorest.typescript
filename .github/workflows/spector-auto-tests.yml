@@ -18,9 +18,6 @@ jobs:
   trigger-copilot-agent:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Build Copilot agent task issue
         id: build-task
         uses: actions/github-script@v7
@@ -34,32 +31,44 @@ jobs:
               notImplemented = context.payload.client_payload.not_implemented || {};
               coverageIssueNumber = context.payload.client_payload.issue_number;
             } else {
-              // For manual trigger, read the coverage JSON from the repo
-              const fs = require('fs');
-              const path = require('path');
-              const coveragePath = path.join(
-                process.env.GITHUB_WORKSPACE,
-                'packages/typespec-ts/coverage/spector-coverage-typescript-modular-azure.json'
-              );
+              // For manual trigger, fetch not-implemented scenarios from the latest coverage report issue
+              const { data: issues } = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: 'spector-coverage',
+                state: 'open',
+                sort: 'created',
+                direction: 'desc',
+                per_page: 1
+              });
 
-              if (fs.existsSync(coveragePath)) {
-                const data = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
-                for (const entry of data) {
-                  const pkg = entry.scenariosMetadata.packageName;
-                  for (const [name, status] of Object.entries(entry.results)) {
-                    if (status === 'not-implemented') {
-                      if (!notImplemented[pkg]) notImplemented[pkg] = {};
-                      const parts = name.split('_');
-                      const group = parts.slice(0, -1).join('_');
-                      const scenario = parts[parts.length - 1];
-                      if (!notImplemented[pkg][group]) notImplemented[pkg][group] = [];
-                      notImplemented[pkg][group].push(scenario);
+              if (issues.length > 0) {
+                const latestIssue = issues[0];
+                coverageIssueNumber = parseInt(process.env.INPUT_ISSUE_NUMBER) || latestIssue.number;
+
+                // Parse scenario names from the issue body (lines matching `| \`Group_Name\` |`)
+                const lines = latestIssue.body.split('\n');
+                let currentPkg = null;
+                for (const line of lines) {
+                  const pkgMatch = line.match(/^### `(.+?)` \(\d+ not implemented\)/);
+                  if (pkgMatch) {
+                    currentPkg = pkgMatch[1];
+                    notImplemented[currentPkg] = {};
+                    continue;
+                  }
+                  if (currentPkg) {
+                    const rowMatch = line.match(/^\| `(.+?)` \| (\d+) \| (.+?) \|$/);
+                    if (rowMatch) {
+                      const group = rowMatch[1];
+                      const scenarios = rowMatch[3].split(', ').map(s => s.trim());
+                      notImplemented[currentPkg][group] = scenarios;
                     }
                   }
                 }
+              } else {
+                coverageIssueNumber = parseInt(process.env.INPUT_ISSUE_NUMBER) || null;
+                core.warning('No open spector-coverage issue found. Create a coverage report first.');
               }
-
-              coverageIssueNumber = parseInt(process.env.INPUT_ISSUE_NUMBER) || null;
             }
 
             // Build the list of scenario groups for the agent prompt
