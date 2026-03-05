@@ -1,10 +1,10 @@
 import { assert } from "chai";
-import { JsonMergePatchClient } from "./generated/payload/json-merge-patch/src/index.js";
+import { JsonMergePatchClient, Resource, ResourcePatch } from "./generated/payload/json-merge-patch/src/index.js";
 
 describe("Payload JSON Merge Patch Client", () => {
   let client: JsonMergePatchClient;
 
-  const expectedCreateBody = {
+  const expectedCreateBody: Resource = {
     name: "Madge",
     description: "desc",
     map: {
@@ -28,6 +28,8 @@ describe("Payload JSON Merge Patch Client", () => {
     intArray: [1, 2, 3]
   };
 
+  // JSON Merge Patch uses null values to delete fields - type cast needed since
+  // TypeScript types don't include null for optional fields
   const expectedUpdateBody = {
     description: null,
     map: {
@@ -54,20 +56,22 @@ describe("Payload JSON Merge Patch Client", () => {
   });
 
   it("should create resource", async () => {
-    const result = await client.createResource(expectedCreateBody as any);
+    const result = await client.createResource(expectedCreateBody);
     assert.strictEqual(result.name, expectedCreateBody.name);
     assert.strictEqual(result.description, expectedCreateBody.description);
   });
 
   it("should update resource", async () => {
-    const result = await client.updateResource(expectedUpdateBody as any);
+    // Use type cast because null values are valid for JSON Merge Patch but not in TypeScript optional types
+    const result = await client.updateResource(expectedUpdateBody as unknown as ResourcePatch);
     assert.strictEqual(result.name, "Madge");
     assert.isUndefined(result.description);
   });
 
   it("should update optional resource", async () => {
+    // Use type cast because null values are valid for JSON Merge Patch but not in TypeScript optional types
     const result = await client.updateOptionalResource({
-      body: expectedUpdateBody as any
+      body: expectedUpdateBody as unknown as ResourcePatch
     });
     assert.strictEqual(result.name, "Madge");
     assert.isUndefined(result.description);
