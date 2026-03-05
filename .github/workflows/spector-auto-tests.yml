@@ -36,7 +36,7 @@ jobs:
               const { data: issues } = await github.rest.issues.listForRepo({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                labels: 'spector-coverage',
+                labels: 'spector-coverage-report',
                 state: 'open',
                 sort: 'created',
                 direction: 'desc',
