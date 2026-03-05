@@ -69,14 +69,19 @@ jobs:
               per_page: 1
             });
 
-            // Parse previous groups from existing issue to detect new ones
+            // Parse previous groups and skip-implement state from existing issue
             const previousGroups = new Set();
+            const skippedGroups = new Set();
             if (existingIssues.length > 0) {
               const lines = existingIssues[0].body.split('\n');
               for (const line of lines) {
                 const rowMatch = line.match(/^\| [`🆕 ]*`(.+?)`/);
                 if (rowMatch) {
                   previousGroups.add(rowMatch[1]);
+                  // Check if the Skip Implement checkbox is checked (column 3)
+                  if (/\|\s*\[x\]\s*\|/.test(line)) {
+                    skippedGroups.add(rowMatch[1]);
+                  }
                 }
               }
             }
@@ -127,14 +132,31 @@ jobs:
               for (const [pkg, groups] of Object.entries(byPackage)) {
                 const totalInPkg = Object.values(groups).reduce((sum, s) => sum + s.length, 0);
                 body += `### \`${pkg}\` (${totalInPkg} not implemented)\n\n`;
-                body += `| Group | Count | Scenarios |\n`;
-                body += `|-------|------:|-----------|\n`;
+                body += `| Group | Count | Skip Implement | Scenarios |\n`;
+                body += `|-------|------:|:--------------:|-----------|\n`;
                 for (const [group, scenarios] of Object.entries(groups).sort(([a], [b]) => a.localeCompare(b))) {
                   const isNew = previousGroups.size > 0 && !previousGroups.has(group);
                   const label = isNew ? `🆕 \`${group}\`` : `\`${group}\``;
-                  body += `| ${label} | ${scenarios.length} | ${scenarios.sort().join(', ')} |\n`;
+                  const skipCheck = skippedGroups.has(group) ? '[x]' : '[ ]';
+                  body += `| ${label} | ${scenarios.length} | ${skipCheck} | ${scenarios.sort().join(', ')} |\n`;
                 }
                 body += `\n`;
+              }
+
+              body += `---\n`;
+              body += `> **📝 Skip Implement column:** Check the box \`[x]\` for any scenario group you want to exclude from automatic Copilot implementation. `;
+              body += `Use this when a group has known emitter limitations, requires manual implementation, or is not yet ready for auto-generation. `;
+              body += `The checkbox state is preserved across weekly report updates.\n`;
+            }
+
+            // Build not_implemented output excluding skipped groups
+            const notImplementedForDispatch = {};
+            for (const [pkg, groups] of Object.entries(byPackage)) {
+              for (const [group, scenarios] of Object.entries(groups)) {
+                if (!skippedGroups.has(group)) {
+                  if (!notImplementedForDispatch[pkg]) notImplementedForDispatch[pkg] = {};
+                  notImplementedForDispatch[pkg][group] = scenarios;
+                }
               }
             }
 
@@ -163,7 +185,7 @@ jobs:
             }
 
             core.setOutput('issue_number', issueNumber);
-            core.setOutput('not_implemented', JSON.stringify(byPackage));
+            core.setOutput('not_implemented', JSON.stringify(notImplementedForDispatch));
 
       - name: Trigger auto-tests workflow
         if: steps.update-issue.outputs.not_implemented != '{}'
