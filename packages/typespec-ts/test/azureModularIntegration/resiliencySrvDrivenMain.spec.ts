@@ -74,8 +74,10 @@ describe("Service Driven new Client v2", () => {
 
 describe("Resiliency ServiceDriven breakTheGlass", () => {
   it("should break the glass using v1 client to call v2-only operation", async () => {
-    // The 'break the glass' scenario: use the old v1 client (client:v1 in URL) with v2 service
-    // and v2 api-version to call the new add-operation endpoint that was added in v2
+    // 'Break the glass' scenario: uses the old v1-compiled client (URL contains client:v1)
+    // with v2 service deployment and v2 api-version to call the new 'add-operation'
+    // endpoint that only exists in v2. The v1 client doesn't expose addOperation as a
+    // typed method, so we use the raw HTTP pipeline to access the v2 endpoint directly.
     const oldClient = new ResiliencyServiceDrivenOldClient(
       "http://localhost:3002",
       "v2",

@@ -1,4 +1,3 @@
-import { assert } from "chai";
 import { QueryClient } from "./generated/parameters/query/src/index.js";
 
 describe("Parameters Query Client", () => {

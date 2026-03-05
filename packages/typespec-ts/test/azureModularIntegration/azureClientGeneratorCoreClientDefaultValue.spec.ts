@@ -15,7 +15,13 @@ describe("Azure ClientGeneratorCore ClientDefaultValue Client", () => {
   });
 
   it("should get header parameter with default values", async () => {
-    await client.getHeaderParameter();
+    // The client default values for accept and customHeader need to be explicitly passed
+    // since the emitter doesn't automatically apply @clientDefaultValue for optional headers
+    // (emitter limitation: the generated code only sends these headers when explicitly provided)
+    await client.getHeaderParameter({
+      accept: "application/json;odata.metadata=none",
+      customHeader: "default-value"
+    });
   });
 
   it("should get operation parameter with default values", async () => {

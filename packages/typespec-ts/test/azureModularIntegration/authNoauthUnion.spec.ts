@@ -1,4 +1,3 @@
-import { assert } from "chai";
 import { UnionClient } from "./generated/authentication/noauth/union/src/index.js";
 
 describe("Authentication Noauth Union Client", () => {

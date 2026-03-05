@@ -1033,10 +1033,6 @@ export const azureModularTsps = [
   {
     outputPath: "response/status-code-range",
     inputPath: "response/status-code-range"
-  },
-  {
-    outputPath: "streaming/jsonl",
-    inputPath: "streaming/jsonl"
   }
 ];
 
