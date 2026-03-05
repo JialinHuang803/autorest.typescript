@@ -59,8 +59,11 @@ jobs:
                     continue;
                   }
                   if (currentPkg) {
-                    const rowMatch = line.match(/^\| `(.+?)` \| (\d+) \| (.+?) \|$/);
+                    // Table format: | Group | Count | Skip Implement | Scenarios |
+                    const rowMatch = line.match(/^\| [`🆕 ]*`(.+?)` \| (\d+) \|[^|]*\| (.+?) \|$/);
                     if (rowMatch) {
+                      // Skip groups with checked Skip Implement checkbox
+                      if (/\|\s*\[x\]\s*\|/.test(line)) continue;
                       const group = rowMatch[1];
                       const scenarios = rowMatch[3].split(', ').map(s => s.trim());
                       notImplemented[currentPkg][group] = scenarios;
