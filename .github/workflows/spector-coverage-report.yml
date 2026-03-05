@@ -60,8 +60,8 @@ jobs:
 
             // Find existing report issue by label
             const { data: existingIssues } = await github.rest.issues.listForRepo({
-              owner: 'JialinHuang803',
-              repo: 'autorest.typescript',
+              owner: context.repo.owner,
+              repo: context.repo.repo,
               labels: 'spector-coverage-report',
               state: 'open',
               sort: 'created',
@@ -142,8 +142,8 @@ jobs:
             if (existingIssues.length > 0) {
               // Update existing issue
               await github.rest.issues.update({
-                owner: 'JialinHuang803',
-                repo: 'autorest.typescript',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 issue_number: existingIssues[0].number,
                 body: body
               });
@@ -152,8 +152,8 @@ jobs:
             } else {
               // Create new issue
               const issue = await github.rest.issues.create({
-                owner: 'JialinHuang803',
-                repo: 'autorest.typescript',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 title: 'Spector Coverage Report',
                 body: body,
                 labels: ['spector-coverage-report']
