@@ -123,7 +123,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.data.number,
-                assignees: ['copilot']
+                assignees: ['Copilot']
               });
               core.info('Assigned issue to Copilot coding agent');
             } catch (err) {
