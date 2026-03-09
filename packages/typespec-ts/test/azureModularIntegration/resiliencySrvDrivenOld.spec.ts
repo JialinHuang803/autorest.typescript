@@ -54,3 +54,16 @@ describe("Service Driven old Client v2", () => {
     assert.isUndefined(result);
   });
 });
+
+describe("Service Driven breakTheGlass", () => {
+  it("should break the glass - use v1 client to call new v2 operation", async () => {
+    // The v1 client always generates URLs with client:v1 in the path.
+    // To call the new add-operation (added in v2) from a v1 client, we use raw
+    // HTTP since addOperation is not in the v1 spec (breaking the glass).
+    const response = await fetch(
+      "http://localhost:3002/resiliency/service-driven/client:v1/service:v2/api-version:v2/add-operation",
+      { method: "DELETE" }
+    );
+    assert.equal(response.status, 204);
+  });
+});

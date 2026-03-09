@@ -1001,6 +1001,38 @@ export const azureModularTsps = [
       "azure/client-generator-core/client-location/move-method-parameter-to-client",
     inputPath:
       "azure/client-generator-core/client-location/move-method-parameter-to-client"
+  },
+  {
+    outputPath: "azure/client-generator-core/client-default-value",
+    inputPath: "azure/client-generator-core/client-default-value"
+  },
+  {
+    outputPath: "azure/resource-manager/multi-service",
+    inputPath: "azure/resource-manager/multi-service"
+  },
+  {
+    outputPath: "azure/resource-manager/multi-service-older-versions",
+    inputPath: "azure/resource-manager/multi-service-older-versions"
+  },
+  {
+    outputPath: "azure/resource-manager/multi-service-shared-models",
+    inputPath: "azure/resource-manager/multi-service-shared-models"
+  },
+  {
+    outputPath: "service/multi-service",
+    inputPath: "service/multi-service"
+  },
+  {
+    outputPath: "authentication/noauth/union",
+    inputPath: "authentication/noauth/union"
+  },
+  {
+    outputPath: "parameters/query",
+    inputPath: "parameters/query"
+  },
+  {
+    outputPath: "response/status-code-range",
+    inputPath: "response/status-code-range"
   }
 ];
 
