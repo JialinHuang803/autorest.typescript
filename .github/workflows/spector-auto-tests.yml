@@ -11,8 +11,12 @@ on:
         type: number
 
 permissions:
-  issues: write
   contents: write
+
+# Target repo for issues (workflow runs in fork, issues go to upstream)
+env:
+  TARGET_OWNER: Azure
+  TARGET_REPO: autorest.typescript
 
 jobs:
   trigger-copilot-agent:
@@ -22,10 +26,13 @@ jobs:
         id: build-task
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.COPILOT_ASSIGN_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.COPILOT_ASSIGN_TOKEN }}
           script: |
             let notImplemented = {};
             let coverageIssueNumber = null;
+
+            const targetOwner = process.env.TARGET_OWNER;
+            const targetRepo = process.env.TARGET_REPO;
 
             // Get data from dispatch payload or workflow inputs
             if (context.eventName === 'repository_dispatch') {
@@ -34,8 +41,8 @@ jobs:
             } else {
               // For manual trigger, fetch not-implemented scenarios from the latest coverage report issue
               const { data: issues } = await github.rest.issues.listForRepo({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner: targetOwner,
+                repo: targetRepo,
                 labels: 'spector-coverage-report',
                 state: 'open',
                 sort: 'created',
@@ -49,7 +56,7 @@ jobs:
                 const latestIssue = reportIssue;
                 coverageIssueNumber = parseInt(process.env.INPUT_ISSUE_NUMBER) || latestIssue.number;
 
-                // Parse scenario names from the issue body (lines matching `| \`Group_Name\` |`)
+                // Parse scenario names from the issue body
                 const lines = latestIssue.body.split('\n');
                 let currentPkg = null;
                 for (const line of lines) {
@@ -60,8 +67,11 @@ jobs:
                     continue;
                   }
                   if (currentPkg) {
-                    const rowMatch = line.match(/^\| `(.+?)` \| (\d+) \| (.+?) \|$/);
+                    // Table format: | Group | Count | Skip Implement | Scenarios |
+                    const rowMatch = line.match(/^\| [`🆕 ]*`(.+?)` \| (\d+) \|[^|]*\| (.+?) \|$/);
                     if (rowMatch) {
+                      // Skip groups with checked Skip Implement checkbox
+                      if (/\|\s*\[x\]\s*\|/.test(line)) continue;
                       const group = rowMatch[1];
                       const scenarios = rowMatch[3].split(', ').map(s => s.trim());
                       notImplemented[currentPkg][group] = scenarios;
@@ -90,7 +100,7 @@ jobs:
             }
 
             const coverageRef = coverageIssueNumber
-              ? `\nResults should be commented on issue #${coverageIssueNumber}.`
+              ? `\nResults should be commented on issue ${targetOwner}/${targetRepo}#${coverageIssueNumber}.`
               : '';
 
             const taskBody = [
@@ -127,51 +137,42 @@ jobs:
               coverageRef
             ].filter(Boolean).join('\n');
 
-            // Create the task issue (without assignee to avoid validation errors)
+            // Create the task issue in the target repo
             const issue = await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner: targetOwner,
+              repo: targetRepo,
               title: `[Copilot] Implement spector tests for ${groups.length} scenario groups`,
               body: taskBody,
               labels: ['spector-coverage']
             });
 
-            core.info(`Created Copilot task issue #${issue.data.number}`);
-
-            // Assign Copilot using the PAT token (GITHUB_TOKEN cannot trigger Copilot agent)
-            try {
-              await github.rest.issues.addAssignees({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.data.number,
-                assignees: ['Copilot']
-              });
-              // Verify the assignment actually took effect
-              const { data: updatedIssue } = await github.rest.issues.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.data.number
-              });
-              const assigned = updatedIssue.assignees.some(a => a.login.toLowerCase() === 'copilot');
-              if (assigned) {
-                core.info('Successfully assigned issue to Copilot coding agent');
-              } else {
-                core.warning('addAssignees returned OK but Copilot is not in assignees. Make sure COPILOT_ASSIGN_TOKEN secret is set with a PAT that has issues:write scope.');
-              }
-            } catch (err) {
-              core.warning(`Could not assign to Copilot: ${err.message}. Make sure COPILOT_ASSIGN_TOKEN secret is set.`);
-            }
-
+            core.info(`Created Copilot task issue #${issue.data.number} in ${targetOwner}/${targetRepo}`);
             core.setOutput('task_issue_number', issue.data.number);
 
             // If we have a coverage issue, add a cross-reference comment
             if (coverageIssueNumber) {
               await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner: targetOwner,
+                repo: targetRepo,
                 issue_number: coverageIssueNumber,
                 body: `🤖 Copilot coding agent has been triggered to implement tests for ${groups.length} not-implemented scenario groups.\n\nTracking issue: #${issue.data.number}`
               });
             }
         env:
           INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+
+      - name: Assign Copilot coding agent
+        if: steps.build-task.outputs.task_issue_number
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.COPILOT_ASSIGN_TOKEN }}
+          script: |
+            await github.rest.issues.addAssignees({
+              owner: process.env.TARGET_OWNER,
+              repo: process.env.TARGET_REPO,
+              issue_number: parseInt(process.env.ISSUE_NUMBER),
+              assignees: ['copilot-swe-agent[bot]']
+            });
+            core.info('Successfully assigned issue to Copilot coding agent');
+        env:
+          ISSUE_NUMBER: ${{ steps.build-task.outputs.task_issue_number }}
