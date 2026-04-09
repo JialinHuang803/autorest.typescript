@@ -4,11 +4,6 @@ on:
   repository_dispatch:
     types: [spector-auto-tests]
   workflow_dispatch:
-    inputs:
-      issue_number:
-        description: "Coverage report issue number to comment results on"
-        required: false
-        type: number
 
 permissions:
   contents: write
@@ -54,7 +49,7 @@ jobs:
 
               if (reportIssue) {
                 const latestIssue = reportIssue;
-                coverageIssueNumber = parseInt(process.env.INPUT_ISSUE_NUMBER) || latestIssue.number;
+                coverageIssueNumber = latestIssue.number;
 
                 // Parse scenario names from the issue body
                 const lines = latestIssue.body.split('\n');
@@ -79,7 +74,7 @@ jobs:
                   }
                 }
               } else {
-                coverageIssueNumber = parseInt(process.env.INPUT_ISSUE_NUMBER) || null;
+                coverageIssueNumber = null;
                 core.warning('No open spector-coverage issue found. Create a coverage report first.');
               }
             }
@@ -104,17 +99,19 @@ jobs:
               : '';
 
             const taskBody = [
-              `## Task: Implement Spector Integration Tests`,
+              `## Task: Verify and Implement Spector Integration Tests`,
               ``,
-              `Use the \`spector-test-implementer\` skill to implement test files for the following not-implemented scenario groups.`,
+              `Use the \`spector-test-implementer\` skill to verify and implement test files for the following not-implemented scenario groups.`,
               ``,
               `**Not-implemented scenario groups:**`,
               groupList,
               ``,
               `**Instructions:**`,
               `1. For each scenario group above, check if a \`.spec.ts\` file already exists in \`packages/typespec-ts/test/azureModularIntegration/\` — skip if it does`,
-              `2. For remaining groups, follow the spector-test-implementer workflow to implement the tests`,
-              `3. Report which tests passed and which failed`,
+              `2. For remaining groups, follow the spector-test-implementer workflow to generate the client and verify the generated code is valid before writing tests`,
+              `3. Read the \`.tsp\` and \`mockapi.ts\` files carefully to understand the expected behavior before implementing each test`,
+              `4. Run each test and remove any failing test cases that are due to emitter limitations — only commit passing tests`,
+              `5. Report which tests passed and which were removed due to failures`,
               ``,
               `**PR description format:**`,
               `The PR description must use this format for each section:`,
@@ -141,7 +138,7 @@ jobs:
             const issue = await github.rest.issues.create({
               owner: targetOwner,
               repo: targetRepo,
-              title: `[Copilot] Implement spector tests for ${groups.length} scenario groups`,
+              title: `[Copilot] Verify and implement spector tests for ${groups.length} scenario groups`,
               body: taskBody,
               labels: ['spector-coverage']
             });
@@ -158,8 +155,6 @@ jobs:
                 body: `🤖 Copilot coding agent has been triggered to implement tests for ${groups.length} not-implemented scenario groups.\n\nTracking issue: #${issue.data.number}`
               });
             }
-        env:
-          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
 
       - name: Assign Copilot coding agent
         if: steps.build-task.outputs.task_issue_number
