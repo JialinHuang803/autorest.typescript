@@ -152,22 +152,23 @@ jobs:
                 owner: targetOwner,
                 repo: targetRepo,
                 issue_number: coverageIssueNumber,
-                body: `🤖 Copilot coding agent has been triggered to implement tests for ${groups.length} not-implemented scenario groups.\n\nTracking issue: #${issue.data.number}`
+                body: `🤖 A task issue has been created for ${groups.length} not-implemented scenario groups.\n\nTracking issue: #${issue.data.number}`
               });
             }
 
-      - name: Assign Copilot coding agent
-        if: steps.build-task.outputs.task_issue_number
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.COPILOT_ASSIGN_TOKEN }}
-          script: |
-            await github.rest.issues.addAssignees({
-              owner: process.env.TARGET_OWNER,
-              repo: process.env.TARGET_REPO,
-              issue_number: parseInt(process.env.ISSUE_NUMBER),
-              assignees: ['copilot-swe-agent[bot]']
-            });
-            core.info('Successfully assigned issue to Copilot coding agent');
-        env:
-          ISSUE_NUMBER: ${{ steps.build-task.outputs.task_issue_number }}
+      # Uncomment to auto-assign Copilot coding agent to the task issue
+      # - name: Assign Copilot coding agent
+      #   if: steps.build-task.outputs.task_issue_number
+      #   uses: actions/github-script@v7
+      #   with:
+      #     github-token: ${{ secrets.COPILOT_ASSIGN_TOKEN }}
+      #     script: |
+      #       await github.rest.issues.addAssignees({
+      #         owner: process.env.TARGET_OWNER,
+      #         repo: process.env.TARGET_REPO,
+      #         issue_number: parseInt(process.env.ISSUE_NUMBER),
+      #         assignees: ['copilot-swe-agent[bot]']
+      #       });
+      #       core.info('Successfully assigned issue to Copilot coding agent');
+      #   env:
+      #     ISSUE_NUMBER: ${{ steps.build-task.outputs.task_issue_number }}
