@@ -237,4 +237,15 @@ describe("Azure ARM Operation Templates", () => {
       assert.equal(result.status, "Changed to requested allowance");
     });
   });
+
+  describe("Lro - exportArray", () => {
+    it("should export array with LRO", async () => {
+      const poller = client.lro.exportArray({ format: "csv" });
+      const result = await poller.pollUntilDone();
+      assert.isArray(result);
+      assert.strictEqual(result.length, 2);
+      assert.strictEqual(result[0]?.content, "order1,product1,1");
+      assert.strictEqual(result[1]?.content, "order2,product2,2");
+    });
+  });
 });

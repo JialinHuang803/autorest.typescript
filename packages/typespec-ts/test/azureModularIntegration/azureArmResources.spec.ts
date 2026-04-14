@@ -242,13 +242,14 @@ describe("Azure Arm Resources Rest Client", () => {
     );
   });
 
-  it.skip("should update top level tracked resources", async () => {
-    const result = await client.topLevel.update("test-rg", "top", {
+  it("should update top level tracked resources", async () => {
+    const poller = await client.topLevel.update("test-rg", "top", {
       location: "eastus",
       properties: {
         description: "valid2"
       }
     });
+    const result = await poller.pollUntilDone();
     assert.strictEqual(result.id, validTopLevelResource.id);
     assert.strictEqual(result.name, validTopLevelResource.name);
     assert.strictEqual(result.type, validTopLevelResource.type);
