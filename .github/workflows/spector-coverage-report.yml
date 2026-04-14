@@ -99,11 +99,12 @@ jobs:
             if (existingIssues.length > 0) {
               const lines = existingIssues[0].body.split('\n');
               for (const line of lines) {
-                const rowMatch = line.match(/^\| [`🆕 ]*`(.+?)`\s*\|\s*(\d+)\s*\|([^|]*)\|\s*(.+?)\s*\|\s*(.*?)\s*\|$/);
+                // Match both old 4-column format and new 5-column format (with Comments)
+                const rowMatch = line.match(/^\| [`🆕 ]*`(.+?)`\s*\|\s*(\d+)\s*\|([^|]*)\|\s*(.+?)\s*\|(?:\s*(.*?)\s*\|)?$/);
                 if (rowMatch) {
                   const group = rowMatch[1];
                   const scenarioStr = rowMatch[4];
-                  const comment = rowMatch[5].trim();
+                  const comment = (rowMatch[5] || '').trim();
                   previousGroups.add(group);
                   previousScenarios[group] = new Set(
                     scenarioStr.split(',').map(s => s.replace(/🆕\s*/g, '').trim())
