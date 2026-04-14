@@ -91,21 +91,26 @@ jobs:
               per_page: 1
             });
 
-            // Parse previous groups, scenarios, and skip-implement state from existing issue
+            // Parse previous groups, scenarios, skip-implement state, and comments from existing issue
             const previousGroups = new Set();
             const previousScenarios = {};
             const skippedGroups = new Set();
+            const groupComments = {};
             if (existingIssues.length > 0) {
               const lines = existingIssues[0].body.split('\n');
               for (const line of lines) {
-                const rowMatch = line.match(/^\| [`🆕 ]*`(.+?)`\s*\|\s*(\d+)\s*\|([^|]*)\|\s*(.+?)\s*\|$/);
+                const rowMatch = line.match(/^\| [`🆕 ]*`(.+?)`\s*\|\s*(\d+)\s*\|([^|]*)\|\s*(.+?)\s*\|\s*(.*?)\s*\|$/);
                 if (rowMatch) {
                   const group = rowMatch[1];
                   const scenarioStr = rowMatch[4];
+                  const comment = rowMatch[5].trim();
                   previousGroups.add(group);
                   previousScenarios[group] = new Set(
                     scenarioStr.split(',').map(s => s.replace(/🆕\s*/g, '').trim())
                   );
+                  if (comment) {
+                    groupComments[group] = comment;
+                  }
                   // Check if the Skip Implement checkbox is checked (column 3)
                   if (/\[x\]/.test(rowMatch[3])) {
                     skippedGroups.add(group);
@@ -160,8 +165,8 @@ jobs:
               for (const [pkg, groups] of Object.entries(byPackage)) {
                 const totalInPkg = Object.values(groups).reduce((sum, s) => sum + s.length, 0);
                 body += `### \`${pkg}\` (${totalInPkg} not implemented)\n\n`;
-                body += `| Group | Count | Skip Implement | Scenarios |\n`;
-                body += `|-------|------:|:--------------:|-----------|\n`;
+                body += `| Group | Count | Skip Implement | Scenarios | Comments |\n`;
+                body += `|-------|------:|:--------------:|-----------|----------|\n`;
                 for (const [group, scenarios] of Object.entries(groups).sort(([a], [b]) => a.localeCompare(b))) {
                   const isNewGroup = previousGroups.size > 0 && !previousGroups.has(group);
                   const label = isNewGroup ? `🆕 \`${group}\`` : `\`${group}\``;
@@ -174,7 +179,8 @@ jobs:
                     }
                     return s;
                   });
-                  body += `| ${label} | ${scenarios.length} | ${skipCheck} | ${scenarioLabels.join(', ')} |\n`;
+                  const comment = groupComments[group] || '';
+                  body += `| ${label} | ${scenarios.length} | ${skipCheck} | ${scenarioLabels.join(', ')} | ${comment} |\n`;
                 }
                 body += `\n`;
               }
