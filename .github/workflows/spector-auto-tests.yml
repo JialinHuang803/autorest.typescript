@@ -146,6 +146,17 @@ jobs:
             core.info(`Created Copilot task issue #${issue.data.number} in ${targetOwner}/${targetRepo}`);
             core.setOutput('task_issue_number', issue.data.number);
 
+            // Assign the issue to v-jiaodi only for the Azure repo
+            if (targetOwner === 'Azure') {
+              await github.rest.issues.addAssignees({
+                owner: targetOwner,
+                repo: targetRepo,
+                issue_number: issue.data.number,
+                assignees: ['v-jiaodi']
+              });
+              core.info('Assigned issue to v-jiaodi');
+            }
+
             // If we have a coverage issue, add a cross-reference comment
             if (coverageIssueNumber) {
               await github.rest.issues.createComment({
