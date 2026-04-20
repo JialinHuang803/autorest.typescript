@@ -52,7 +52,7 @@ jobs:
                 coverageIssueNumber = latestIssue.number;
 
                 // Parse scenario names from the issue body
-                const lines = latestIssue.body.split('\n');
+                const lines = latestIssue.body.split(/\r?\n/);
                 let currentPkg = null;
                 for (const line of lines) {
                   const pkgMatch = line.match(/^### `(.+?)` \(\d+ not implemented\)/);

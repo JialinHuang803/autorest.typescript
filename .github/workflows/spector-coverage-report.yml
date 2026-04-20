@@ -97,7 +97,7 @@ jobs:
             const skippedGroups = new Set();
             const groupComments = {};
             if (existingIssues.length > 0) {
-              const lines = existingIssues[0].body.split('\n');
+              const lines = existingIssues[0].body.split(/\r?\n/);
               for (const line of lines) {
                 // Match both old 4-column format and new 5-column format (with Comments)
                 const rowMatch = line.match(/^\| [`🆕 ]*`(.+?)`\s*\|\s*(\d+)\s*\|([^|]*)\|\s*(.+?)\s*\|(?:\s*(.*?)\s*\|)?$/);
