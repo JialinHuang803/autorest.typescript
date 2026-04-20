@@ -2,8 +2,8 @@ name: Weekly Spector Coverage Report
 
 on:
   schedule:
-    # Every Monday at 9:00 UTC
-    - cron: "0 9 * * 1"
+    # Every Monday at 9:00 UTC+8 (1:00 UTC)
+    - cron: "0 1 * * 1"
   workflow_dispatch:
     inputs:
       target_owner:
